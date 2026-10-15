@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <rect width="800" height="500" fill="#E5EEE7"/>
+  <circle cx="630" cy="96" r="70" fill="#F7F6F1"/>
+  <path d="M0 377c155-89 270-60 400-10 135 52 269 64 400-12v145H0V377Z" fill="#C8DCCF"/>
+  <path d="M243 180c32-36 86-40 124-13 25 18 37 47 62 62 40 24 78 45 93 91 11 35 1 73-23 96H193c-24-79-15-184 50-236Z" fill="#F1D8C8"/>
+  <path d="M364 184c13-15 35-16 49-3 11 10 11 26 0 38-13 14-35 15-48 3-11-10-12-27-1-38Zm44-25c10-11 27-12 37-2 9 8 9 21 0 31-10 11-26 12-37 3-9-8-9-22 0-32Z" fill="#D5AA8E"/>
+  <path d="M565 218c-12 33-42 54-74 55M579 205c-27-12-41-37-38-67" stroke="#477D68" stroke-width="8" stroke-linecap="round"/>
+  <text x="400" y="457" text-anchor="middle" font-family="Arial,sans-serif" font-size="19" letter-spacing="3" fill="#244B3E">CUIDADO E SAÚDE DOS PÉS</text>
+</svg>
