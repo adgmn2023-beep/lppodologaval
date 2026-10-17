@@ -2,6 +2,7 @@ import type { GbpReview } from "@/lib/gbp";
 import { site } from "@/config/site";
 import { SectionHeading } from "./section-heading";
 import { ArrowUpRightIcon } from "./icons";
+import { ReviewDate, ReviewText } from "./review-content";
 
 type ReviewsSectionProps = {
   reviews: GbpReview[];
@@ -9,62 +10,52 @@ type ReviewsSectionProps = {
 };
 
 export function ReviewsSection({ reviews, isMock }: ReviewsSectionProps) {
-  if (reviews.length === 0) return null;
+  if (reviews.length < 3) return null;
 
   return (
-    <section id="avaliacoes" className="bg-cream px-5 py-20 sm:px-8 md:py-28">
-      <div className="mx-auto max-w-6xl">
+    <section id="avaliacoes" className="min-w-0 overflow-hidden bg-cream px-5 py-14 sm:px-8 md:py-24">
+      <div className="mx-auto min-w-0 max-w-6xl">
         <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
           <SectionHeading
             eyebrow="Quem já veio"
             title="Palavras de quem confia no meu cuidado"
             description="Cada experiência é única. Veja alguns relatos compartilhados por quem já passou pelo meu consultório."
           />
-          <div className="mb-10 flex flex-wrap gap-3 md:mb-14">
+          <div className="flex flex-wrap gap-2 md:mb-14">
             {site.google.reviewsUrl && (
-              <a className="inline-flex items-center gap-2 text-sm font-semibold text-forest underline decoration-sage underline-offset-4 hover:text-leaf" href={site.google.reviewsUrl} target="_blank" rel="noreferrer">
+              <a className="inline-flex min-h-12 items-center gap-2 text-base font-semibold text-forest underline decoration-sage underline-offset-4 hover:text-leaf" href={site.google.reviewsUrl} target="_blank" rel="noreferrer">
                 Ver todas no Google <ArrowUpRightIcon className="h-4 w-4" />
               </a>
             )}
             {site.google.writeReviewUrl && (
-              <a className="inline-flex items-center gap-2 text-sm font-semibold text-forest underline decoration-sage underline-offset-4 hover:text-leaf" href={site.google.writeReviewUrl} target="_blank" rel="noreferrer">
+              <a className="inline-flex min-h-12 items-center gap-2 text-base font-semibold text-forest underline decoration-sage underline-offset-4 hover:text-leaf" href={site.google.writeReviewUrl} target="_blank" rel="noreferrer">
                 Deixar sua avaliação <ArrowUpRightIcon className="h-4 w-4" />
               </a>
             )}
           </div>
         </div>
-        {isMock && <p className="mb-5 text-xs text-muted">Dados de exemplo — avaliações demonstrativas.</p>}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {isMock && <p className="mb-5 text-[13px] text-muted">Dados de exemplo — avaliações demonstrativas.</p>}
+        <div className={`relative flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-5 md:grid md:snap-none md:grid-cols-2 md:overflow-visible ${reviews.length % 3 === 0 ? "lg:grid-cols-3" : "lg:grid-cols-2"}`} tabIndex={0} aria-label="Avaliações de pacientes">
           {reviews.map((review) => (
-            <article key={review.id} className="flex flex-col rounded-3xl border border-sage/70 bg-white p-6 shadow-card">
-              <div className="mb-4 flex items-center justify-between">
-                <span className="text-lg tracking-[0.12em] text-[#b48330]" aria-label={`${review.rating} de 5 estrelas`}>
+            <article key={review.id} className="flex w-[85%] shrink-0 snap-start flex-col rounded-3xl border border-sage bg-white p-5 shadow-card md:w-auto md:min-w-0 md:p-6">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-lg tracking-[0.12em] text-[#805c19]" aria-label={`${review.rating} de 5 estrelas`}>
                   {"★".repeat(review.rating)}
-                  <span className="sr-only"> {review.rating} de 5 estrelas</span>
                 </span>
-                <span className="text-xs text-muted">{review.relativeDate}</span>
+                <span className="text-[13px] text-muted">{review.date ? <ReviewDate date={review.date} fallback={review.relativeDate} /> : review.relativeDate}</span>
               </div>
-              {review.text.length > 180 ? (
-                <details className="mb-5 text-sm leading-6 text-ink">
-                  <summary className="cursor-pointer list-none marker:hidden">
-                    {review.text.slice(0, 160).trimEnd()}…{" "}
-                    <span className="font-semibold text-leaf underline underline-offset-2">Ler avaliação completa</span>
-                  </summary>
-                  <p className="mt-2">{review.text}</p>
-                </details>
-              ) : (
-                <p className="mb-5 text-sm leading-6 text-ink">{review.text}</p>
-              )}
+              <ReviewText text={review.text} />
               {review.ownerReply && (
                 <div className="mb-5 rounded-2xl bg-sage/60 p-4">
-                  <p className="mb-1 text-xs font-bold text-forest">Resposta da Val</p>
-                  <p className="text-sm leading-5 text-muted">{review.ownerReply}</p>
+                  <p className="mb-1 text-[13px] font-bold text-forest">Minha resposta</p>
+                  <p className="text-base leading-6 text-muted">{review.ownerReply}</p>
                 </div>
               )}
-              <p className="mt-auto border-t border-sage pt-4 text-sm font-semibold text-forest">{review.authorName}</p>
+              <p className="mt-auto border-t border-sage pt-4 text-base font-semibold text-forest">{review.authorName}</p>
             </article>
           ))}
         </div>
+        {reviews.some((review) => review.dateApproximate) && <p className="mt-3 text-[13px] leading-6 text-muted">Datas aproximadas a partir das indicações de tempo do Google.</p>}
       </div>
     </section>
   );

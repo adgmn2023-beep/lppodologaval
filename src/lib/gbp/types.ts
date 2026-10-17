@@ -1,6 +1,7 @@
 export type GbpSummary = {
   averageRating: number;
   totalReviews: number;
+  asOf?: string;
 };
 
 export type GbpReview = {
@@ -10,6 +11,8 @@ export type GbpReview = {
   relativeDate: string;
   text: string;
   ownerReply?: string;
+  date?: string;
+  dateApproximate?: boolean;
 };
 
 export type GbpPost = {

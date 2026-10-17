@@ -1,102 +1,59 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
 import Image from "next/image";
 import { BusinessJsonLd } from "@/components/business-json-ld";
 import { FaqJsonLd, FaqSection } from "@/components/faq-section";
-import { ArrowUpRightIcon, PinIcon } from "@/components/icons";
+import { ArrowUpRightIcon, PinIcon, ServiceIcon } from "@/components/icons";
+import { OpeningStatus } from "@/components/opening-status";
 import { PostsSection } from "@/components/posts-section";
+import { ResponsiveMap } from "@/components/responsive-map";
 import { ReviewsSection } from "@/components/reviews-section";
 import { SectionHeading } from "@/components/section-heading";
-import { TrackedLink } from "@/components/tracked-links";
+import { TrackedLink, WhatsAppLink } from "@/components/tracked-links";
 import { WhatsAppCta } from "@/components/whatsapp-cta";
 import { site } from "@/config/site";
 import { gbpProvider, isMockGbpProvider } from "@/lib/gbp";
 
 function RatingBadge({ averageRating, totalReviews }: { averageRating: number; totalReviews: number }) {
   return (
-    <div className="inline-flex items-center gap-3 rounded-full border border-sage bg-white/80 px-4 py-2 shadow-sm">
-      <span className="text-lg leading-none text-[#b48330]" aria-label={`${averageRating} de 5 estrelas`}>★</span>
-      <span className="text-sm font-bold text-forest">{averageRating}</span>
-      <span className="h-4 w-px bg-sage" />
-      <span className="text-xs text-muted">{totalReviews} avaliações no Google</span>
-      {isMockGbpProvider && <span className="rounded-full bg-cream px-2 py-1 text-[10px] text-muted">exemplo</span>}
-    </div>
+    <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-sage bg-white px-3 py-1 text-[13px] font-semibold text-forest">
+      <span aria-hidden="true">★</span>
+      <span>{averageRating.toLocaleString("pt-BR", { minimumFractionDigits: 1 })} · {totalReviews} avaliações no Google</span>
+      {isMockGbpProvider && <span className="rounded-full bg-cream px-2 text-[13px] text-muted">exemplo</span>}
+    </span>
   );
 }
 
 function LocationSection() {
-  const hasAddress = Boolean(site.address.streetAddress);
-  const hasHours = site.openingHours.length > 0;
-
   return (
-    <section id="localizacao" className="bg-white px-5 py-20 sm:px-8 md:py-28">
-      <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-2 lg:gap-16">
+    <section id="localizacao" className="bg-white px-5 py-14 sm:px-8 md:py-24">
+      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-2 lg:gap-16">
         <div>
-          <SectionHeading
-            eyebrow="Onde me encontrar"
-            title="Podologia perto de você, em Campo Grande"
-            description="Um espaço pensado para receber você com cuidado. Me chame para confirmar o endereço e combinar sua visita."
-          />
-          <div className="space-y-5">
-            <div className="flex gap-4">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sage text-forest">
-                <PinIcon className="h-5 w-5" />
-              </span>
+          <SectionHeading eyebrow="Onde me encontrar" title="Meu consultório em Campo Grande" description="Recebo você com hora marcada, de segunda a sábado." />
+          <div className="space-y-6 text-base leading-7 text-muted">
+            <div className="flex gap-3">
+              <PinIcon className="mt-1 h-6 w-6 shrink-0 text-forest" />
               <div>
-                <p className="font-semibold text-forest">Endereço</p>
-                <p className="mt-1 text-sm leading-6 text-muted">
-                  {hasAddress
-                    ? `${site.address.streetAddress}, ${site.address.neighborhood}, ${site.address.addressLocality} - ${site.address.addressRegion}`
-                    : `Campo Grande, ${site.address.addressLocality} - ${site.address.addressRegion}. Endereço completo sob consulta.`}
-                </p>
+                <p className="font-semibold text-forest">{site.address.full}</p>
+                <p className="mt-2">Fico {site.address.reference}.</p>
+                <p className="mt-2">{site.parking}.</p>
               </div>
             </div>
-            <div className="flex gap-4">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sage text-forest">◷</span>
-              <div>
-                <p className="font-semibold text-forest">Horários</p>
-                {hasHours ? (
-                  <ul className="mt-1 space-y-1 text-sm text-muted">
-                    {site.openingHours.map((hour) => (
-                      <li key={hour.dayOfWeek}>{hour.dayOfWeek}: {hour.opens}–{hour.closes}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-1 text-sm text-muted">Consulte os horários disponíveis pelo WhatsApp.</p>
-                )}
-              </div>
+            <div>
+              <p className="font-semibold text-forest">Meus horários</p>
+              <p>Segunda a sexta: 08:30–18:30</p>
+              <p>Sábado: 08:00–12:00 · Domingo: fechado</p>
+            </div>
+            <div>
+              <p>Aceito cartão de crédito, débito e pagamento por aproximação.</p>
+              <p className="mt-2">No meu consultório, tenho assento e banheiro acessíveis.</p>
             </div>
           </div>
-          {site.google.directionsUrl ? (
-            <TrackedLink
-              href={site.google.directionsUrl}
-              action="directions"
-              external
-              className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-forest px-6 text-sm font-semibold text-forest transition hover:bg-sage"
-            >
-              Como chegar <ArrowUpRightIcon className="h-4 w-4" />
-            </TrackedLink>
-          ) : (
-            <p className="mt-8 text-xs text-muted">O link de rota será publicado quando o endereço estiver confirmado.</p>
-          )}
+          <TrackedLink href={site.google.directionsUrl} action="directions" external className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-forest px-6 font-semibold text-forest transition hover:bg-sage">
+            Como chegar <ArrowUpRightIcon className="h-5 w-5" />
+          </TrackedLink>
         </div>
-        <div className="relative min-h-[300px] overflow-hidden rounded-[2rem] bg-sage md:min-h-[420px]">
-          {site.google.mapEmbedUrl ? (
-            <iframe
-              title={`Mapa do consultório ${site.name} em Campo Grande`}
-              src={site.google.mapEmbedUrl}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="absolute inset-0 h-full w-full border-0"
-            />
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[radial-gradient(circle_at_30%_40%,#fff_0,#e7eee8_48%,#d7e5da_100%)] p-8 text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white text-leaf shadow-sm">
-                <PinIcon className="h-8 w-8" />
-              </div>
-              <p className="font-display text-2xl text-forest">Campo Grande, Rio de Janeiro</p>
-              <p className="mt-2 max-w-xs text-sm leading-6 text-muted">O mapa será exibido após a confirmação do endereço da clínica.</p>
-            </div>
-          )}
-        </div>
+        <ResponsiveMap embedUrl={site.google.resolvedMapEmbedUrl} mapsUrl={site.google.mapUrl} address={site.address.full} />
       </div>
     </section>
   );
@@ -104,14 +61,14 @@ function LocationSection() {
 
 function FinalCta() {
   return (
-    <section className="bg-forest px-5 py-16 text-white sm:px-8 md:py-24">
+    <section className="bg-forest px-5 py-14 text-white sm:px-8 md:py-24">
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 md:flex-row md:items-center">
         <div className="max-w-2xl">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-[#b8d5c3]">Vamos conversar?</p>
+          <p className="mb-3 text-[13px] font-bold uppercase tracking-[0.2em] text-[#b8d5c3]">Fale comigo</p>
           <h2 className="font-display text-3xl leading-tight sm:text-4xl">Seu próximo passo pode começar com uma conversa.</h2>
-          <p className="mt-4 text-sm leading-6 text-white/75">Me conte o que você precisa. Eu respondo pelo WhatsApp.</p>
+          <p className="mt-4 text-lg leading-7 text-white/90">Me conte o que você precisa. Eu respondo pelo WhatsApp.</p>
         </div>
-        <WhatsAppCta className="inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-white px-7 font-semibold text-forest transition hover:bg-sage md:w-auto" />
+        <WhatsAppCta className="inline-flex min-h-14 w-full shrink-0 items-center justify-center gap-3 rounded-full bg-white px-7 font-semibold text-forest transition hover:bg-sage md:w-auto" />
       </div>
     </section>
   );
@@ -119,25 +76,18 @@ function FinalCta() {
 
 function Footer() {
   return (
-    <footer className="bg-[#19382f] px-5 pb-28 pt-10 text-white sm:px-8 md:pb-10">
+    <footer className="bg-[#19382f] px-5 py-10 text-white sm:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 md:flex-row md:items-center md:justify-between">
-        <div>
+        <div className="max-w-2xl">
           <p className="font-display text-2xl">{site.name}</p>
-          <p className="mt-1 text-sm text-white/65">{site.descriptor}</p>
-          <p className="mt-3 text-xs text-white/55">© {new Date().getFullYear()} {site.name}. Conteúdo informativo, não substitui avaliação profissional.</p>
+          <p className="mt-2 text-base text-white/90">{site.brand}</p>
+          <p className="mt-3 text-[13px] leading-6 text-white/80">© {new Date().getFullYear()} {site.name}. Conteúdo informativo.</p>
         </div>
-        <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/80">
-          {site.phone && (
-            <TrackedLink href={`tel:${site.phone}`} action="phone" className="hover:text-white">
-              Telefone: {site.phone}
-            </TrackedLink>
-          )}
-          {site.google.businessProfileUrl && (
-            <a href={site.google.businessProfileUrl} target="_blank" rel="noreferrer" className="hover:text-white">
-              Ficha no Google
-            </a>
-          )}
-          <a href={site.privacyPath} className="hover:text-white">Privacidade</a>
+        <div className="flex flex-wrap gap-2 text-base text-white/90">
+          <TrackedLink href={`tel:${site.phone}`} action="phone" className="inline-flex min-h-12 items-center px-2 hover:text-white">{site.phoneDisplay}</TrackedLink>
+          <a href={site.sameAs[0]} target="_blank" rel="noreferrer" className="inline-flex min-h-12 items-center px-2 hover:text-white">Instagram</a>
+          {site.google.businessProfileUrl && <a href={site.google.businessProfileUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-12 items-center px-2 hover:text-white">Ficha no Google</a>}
+          <a href={site.privacyPath} className="inline-flex min-h-12 items-center px-2 hover:text-white">Privacidade</a>
         </div>
       </div>
     </footer>
@@ -146,156 +96,114 @@ function Footer() {
 
 export default async function HomePage() {
   const [summary, allReviews, posts] = await Promise.all([
-    gbpProvider.getSummary(),
-    gbpProvider.getReviews(),
-    gbpProvider.getPosts(),
+    gbpProvider.getSummary(), gbpProvider.getReviews(), gbpProvider.getPosts(),
   ]);
+  const mediaExists = (src: string) => existsSync(path.join(process.cwd(), "public", src));
+  const hasHero = mediaExists(site.images.hero.src);
+  const hasAbout = mediaExists(site.images.about.src);
   const configuredMinStars = Number.parseInt(process.env.GBP_MIN_STARS || "4", 10);
-  const minStars = Number.isFinite(configuredMinStars)
-    ? Math.min(5, Math.max(1, configuredMinStars))
-    : 4;
+  const minStars = Number.isFinite(configuredMinStars) ? Math.min(5, Math.max(1, configuredMinStars)) : 4;
   const reviews = allReviews.filter((review) => review.rating >= minStars);
+  const optionalServices = site.optionalServices.filter((service) => service.confirmed);
+  const heroSizes = "(min-width: 1280px) 480px, (min-width: 1024px) calc(46vw - 55.2px), (min-width: 640px) min(calc(100vw - 64px), 48svh), min(calc(100vw - 40px), 48svh)";
 
   return (
     <>
-      <BusinessJsonLd summary={summary} includeAggregateRating={!isMockGbpProvider} />
+      <BusinessJsonLd />
       <FaqJsonLd />
-      <header className="sticky top-0 z-40 border-b border-sage/70 bg-white/95 px-5 backdrop-blur sm:px-8">
-        <div className="mx-auto flex h-[72px] max-w-6xl items-center justify-between">
-          <a href="#inicio" className="flex items-center gap-3" aria-label={`${site.name}, início`}>
-            <Image src="/images/logo-mark.svg" alt="" width={40} height={40} priority />
-            <span>
-              <span className="block font-display text-lg leading-tight text-forest">{site.name}</span>
-              <span className="block text-[10px] uppercase tracking-[0.14em] text-muted">{site.descriptor}</span>
-            </span>
+      <header className="sticky top-0 z-40 border-b border-sage bg-white/95 px-5 backdrop-blur sm:px-8">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 md:h-[72px]">
+          <a href="#inicio" className="flex min-h-12 items-center gap-2" aria-label={`${site.brand} Podologia, início`}>
+            <Image src="/images/logo-mark.svg" alt="" width={36} height={36} />
+            <span><span className="block font-display text-xl leading-tight text-forest">{site.brand}</span><span className="block text-[13px] text-muted">Podologia</span></span>
           </a>
-          <WhatsAppCta className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-forest px-4 text-xs font-semibold text-white transition hover:bg-leaf sm:px-5 sm:text-sm" />
+          <WhatsAppCta label="Agendar" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-forest px-5 text-base font-semibold text-white transition hover:bg-leaf" />
         </div>
       </header>
-
       <main>
-        <section id="inicio" className="relative overflow-hidden bg-cream px-5 pb-20 pt-12 sm:px-8 md:pb-28 md:pt-20">
-          <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-14">
-            <div className="relative z-10">
-              <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-sage px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-forest">
-                Podologia clínica · Campo Grande, RJ
-              </p>
-              <h1 className="max-w-2xl font-display text-[2.65rem] leading-[1.08] tracking-tight text-forest sm:text-5xl md:text-6xl">
-                Unha encravada, calos ou mudanças nas unhas? Eu posso orientar você.
+        <section id="inicio" className="overflow-hidden bg-cream px-5 pb-14 pt-5 sm:px-8 lg:py-20">
+          <div className="mx-auto grid max-w-6xl items-center gap-7 lg:grid-cols-[1.08fr_0.92fr] lg:gap-14">
+            <div>
+              <p className="mb-3 inline-flex rounded-full bg-sage px-3 py-1 text-[13px] font-semibold text-forest">Campo Grande, Rio de Janeiro</p>
+              <h1 className="max-w-2xl font-display text-[2rem] font-semibold leading-[1.12] tracking-tight text-forest sm:text-5xl lg:text-[3.25rem]">
+                Podóloga em Campo Grande, RJ
+                <span className="mt-2 block text-[1.5rem] font-normal leading-tight sm:text-3xl lg:text-4xl">cuidado atencioso para os seus pés</span>
               </h1>
-              <p className="mt-6 max-w-xl text-base leading-7 text-muted md:text-lg md:leading-8">
-                Unha encravada, calos, alterações nas unhas ou cuidado com o pé diabético? Eu sou a Val e posso conversar com você sobre podologia clínica, com atenção e respeito ao seu momento.
+              <p className="mt-3 max-w-xl text-lg leading-[1.5] text-muted lg:mt-5 lg:leading-8">
+                Sou a Cláudia Val e atendo unha encravada, micose de unha (inclusive a laser), calos, frieiras, rachaduras e o cuidado dos pés de quem tem diabetes. Atendimento com hora marcada, de segunda a sábado.
               </p>
-              <div className="mt-8 flex flex-col items-start gap-5">
-                <WhatsAppCta className="inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-forest px-7 text-base font-semibold text-white shadow-lg shadow-forest/15 transition hover:-translate-y-0.5 hover:bg-leaf sm:w-auto" />
-                <RatingBadge averageRating={summary.averageRating} totalReviews={summary.totalReviews} />
+              <WhatsAppCta className="mt-5 inline-flex h-14 w-full items-center justify-center gap-3 rounded-full bg-forest px-5 text-base font-semibold text-white shadow-lg shadow-forest/15 transition hover:bg-leaf lg:w-auto lg:px-7" />
+              <div className="mt-3" data-hero-address>
+                <p className="flex items-start gap-2 text-base leading-6 text-forest"><PinIcon className="mt-0.5 h-5 w-5 shrink-0" /><span>{site.address.streetAddress} · Campo Grande, RJ</span></p>
+                <OpeningStatus hours={site.openingHours} hoursLabel={site.hoursLabel} />
               </div>
-              <p className="mt-3 text-xs text-muted">Informações sobre avaliação exibidas conforme a camada de dados.</p>
-            </div>
-            <div className="relative mx-auto w-full max-w-[520px]">
-              <div className="absolute -inset-3 rounded-[2.5rem] bg-[#dce9df]" />
-              <div className="relative aspect-[4/4.2] overflow-hidden rounded-[2.2rem] bg-sage">
-                <Image
-                  src="/images/hero-care.svg"
-                  alt="Ilustração acolhedora sobre cuidados com os pés"
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 45vw"
-                  className="object-cover"
-                />
+              <div className="mt-2 flex flex-wrap gap-2" aria-label="Sobre meu atendimento">
+                {summary && <RatingBadge averageRating={summary.averageRating} totalReviews={summary.totalReviews} />}
+                <span className="inline-flex min-h-9 items-center rounded-full border border-sage bg-white px-3 py-1 text-[13px] text-forest">Aceito cartões</span>
+                <span className="inline-flex min-h-9 items-center rounded-full border border-sage bg-white px-3 py-1 text-[13px] text-forest">Atendimento com hora marcada</span>
               </div>
-              {isMockGbpProvider && (
-                <span className="absolute bottom-5 left-5 rounded-full bg-white/90 px-3 py-1.5 text-[10px] text-muted shadow-sm">
-                  Ilustração demonstrativa
-                </span>
-              )}
             </div>
+            {hasHero && (
+              <div className="mx-auto aspect-[4/5] w-full max-w-[min(100%,48svh)] overflow-hidden rounded-[2rem] bg-sage shadow-card lg:max-w-[480px]">
+                <Image {...site.images.hero} alt={site.images.hero.alt} quality={75} preload fetchPriority="high" sizes={heroSizes} className="hero-photo aspect-[4/5] h-full w-full object-cover" />
+              </div>
+            )}
           </div>
         </section>
 
-        <section id="servicos" className="bg-white px-5 py-20 sm:px-8 md:py-28">
+        <section id="servicos" className="bg-white px-5 py-14 sm:px-8 md:py-24">
           <div className="mx-auto max-w-6xl">
-            <SectionHeading
-              eyebrow="Como posso ajudar"
-              title="Cuidado podológico para diferentes necessidades"
-              description="Eu avalio cada situação com atenção e explico as possibilidades de cuidado de forma clara."
-            />
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <SectionHeading eyebrow="Como posso ajudar" title="Cuidado podológico para diferentes necessidades" description="Eu avalio cada situação com atenção e explico as possibilidades de cuidado de forma clara." />
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               {site.services.map((service) => (
-                <article key={service.title} className="group rounded-3xl border border-sage/80 bg-white p-6 transition hover:-translate-y-1 hover:shadow-card sm:p-7">
-                  <span className="mb-7 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sage font-display text-lg text-forest">{service.icon}</span>
-                  <h3 className="font-display text-2xl text-forest">{service.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-muted">{service.description}</p>
+                <article key={service.title} className="rounded-3xl border border-sage bg-white transition hover:shadow-card">
+                  <WhatsAppLink href={`https://wa.me/${site.whatsapp.phone}?text=${encodeURIComponent(`Olá, Val! Vim pelo site e gostaria de saber sobre ${service.title}.`)}`} className="grid h-full grid-cols-[40px_minmax(0,1fr)] items-center gap-x-3 gap-y-2 rounded-3xl p-4 focus-visible:outline-2 focus-visible:outline-forest md:flex md:flex-col md:items-start md:gap-3 md:p-6">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sage text-forest"><ServiceIcon kind={service.icon} className="h-6 w-6" /></span>
+                    <h3 className="font-display text-xl font-semibold text-forest md:text-2xl">{service.title}</h3>
+                    <p className="col-span-2 text-base leading-6 text-muted">{service.description}</p>
+                  </WhatsAppLink>
                 </article>
               ))}
+              {optionalServices.map((service) => <article key={service.title} className="rounded-3xl border border-sage p-5"><h3 className="font-display text-xl text-forest">{service.title}</h3><p className="mt-2 text-base text-muted">{service.description}</p></article>)}
             </div>
-            <p className="mt-7 text-xs leading-5 text-muted">O atendimento é definido após avaliação. Em caso de sinais de infecção, dor intensa ou agravamento, procure um serviço de saúde.</p>
+            <div className="mt-7"><p className="mb-3 font-semibold text-forest">Também atendo:</p><ul className="flex flex-wrap gap-2">{site.additionalServices.map((service) => <li key={service} className="rounded-full bg-sage px-3 py-2 text-[13px] text-forest">{service}</li>)}</ul></div>
+            {site.prices.length > 0 && <ul className="mt-7 space-y-2 text-base text-forest">{site.prices.map((price) => <li key={price.service}>{price.service}: a partir de {price.from.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</li>)}</ul>}
+            <p className="mt-6 text-[13px] leading-6 text-muted">Em caso de febre, pus, vermelhidão que se espalha ou dor intensa, procure atendimento médico.</p>
+            <div className="mt-7 text-center"><WhatsAppCta className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-forest px-6 font-semibold text-white transition hover:bg-leaf sm:w-auto" /></div>
           </div>
         </section>
 
-        <section id="sobre" className="bg-sage/50 px-5 py-20 sm:px-8 md:py-28">
-          <div className="mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-2 md:gap-16">
-            <div className="relative mx-auto aspect-[4/4.5] w-full max-w-md overflow-hidden rounded-[2rem] bg-sage">
-              <Image src={site.about.photoSrc} alt={site.about.photoAlt} fill sizes="(max-width: 768px) 100vw, 40vw" className="object-cover" />
-              <span className="absolute bottom-4 left-4 rounded-full bg-white/90 px-3 py-1.5 text-[10px] text-muted shadow-sm">Ilustração provisória · substituir pela foto da Val</span>
-            </div>
+        <section id="sobre" className="bg-sage/50 px-5 py-14 sm:px-8 md:py-24">
+          <div className="mx-auto grid max-w-6xl items-center gap-8 md:grid-cols-2 md:gap-16">
+            {hasAbout && <figure className="mx-auto w-full max-w-md"><Image {...site.images.about} alt={site.images.about.alt} loading="lazy" sizes="(min-width: 1280px) 448px, (min-width: 768px) 40vw, 90vw" className="aspect-[4/5] w-full rounded-[2rem] object-cover" /><figcaption className="mt-3 text-center text-[13px] leading-5 text-muted">Cláudia Val, podóloga</figcaption></figure>}
             <div>
               <SectionHeading eyebrow={`Prazer, eu sou ${site.professionalName}`} title="Cuidado que começa pela escuta" />
-              <div className="space-y-4 text-sm leading-7 text-muted md:text-base">
-                {site.about.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-              </div>
-              {(site.about.education || site.about.experience) && (
-                <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                  {site.about.education && (
-                    <div className="rounded-2xl border border-sage bg-white p-4">
-                      <p className="text-xs font-bold uppercase tracking-wider text-leaf">Formação</p>
-                      <p className="mt-2 text-sm font-semibold text-forest">{site.about.education}</p>
-                    </div>
-                  )}
-                  {site.about.experience && (
-                    <div className="rounded-2xl border border-sage bg-white p-4">
-                      <p className="text-xs font-bold uppercase tracking-wider text-leaf">Experiência</p>
-                      <p className="mt-2 text-sm font-semibold text-forest">{site.about.experience}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-              <WhatsAppCta className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-forest px-6 text-sm font-semibold text-forest transition hover:bg-sage" />
+              <div className="space-y-4 text-lg leading-8 text-muted">{site.about.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>
+              {(site.about.education || site.about.experience || site.about.registration) && <div className="mt-6 space-y-3 text-base text-forest">{site.about.education && <p>Minha formação: {site.about.education}</p>}{site.about.experience && <p>Minha experiência: {site.about.experience}</p>}{site.about.registration && <p>Meu registro profissional: {site.about.registration}</p>}</div>}
+              <WhatsAppCta className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-forest px-6 font-semibold text-forest transition hover:bg-sage" />
             </div>
           </div>
         </section>
 
-        <section className="bg-white px-5 py-20 sm:px-8 md:py-28">
-          <div className="mx-auto max-w-6xl">
-            <SectionHeading eyebrow="Sem complicação" title="Como funciona o atendimento" centered />
-            <ol className="grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
-              {site.process.map((step, index) => (
-                <li key={step.title} className="relative">
-                  <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-sage font-display text-xl text-forest">{String(index + 1).padStart(2, "0")}</span>
-                  <h3 className="font-display text-xl text-forest">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-muted">{step.description}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
+        <section className="bg-white px-5 py-14 sm:px-8 md:py-24">
+          <div className="mx-auto max-w-6xl"><SectionHeading eyebrow="Sem complicação" title="Como funciona o atendimento" centered /><ol className="grid gap-7 sm:grid-cols-2 lg:grid-cols-4">{site.process.map((step, index) => <li key={step.title}><span className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-sage font-display text-xl text-forest">{index + 1}</span><h3 className="font-display text-xl text-forest">{step.title}</h3><p className="mt-2 text-base leading-7 text-muted">{step.description}</p></li>)}</ol></div>
         </section>
-
         <ReviewsSection reviews={reviews} isMock={isMockGbpProvider} />
         <PostsSection posts={posts} isMock={isMockGbpProvider} />
+        {site.confirmed.anyRegion && <section className="bg-sage/50 px-5 py-14 sm:px-8 md:py-24"><div className="mx-auto max-w-3xl"><SectionHeading eyebrow="Minha região" title={site.region.title} /><p className="text-lg leading-8 text-muted">{site.region.description}</p></div></section>}
         <LocationSection />
         <FaqSection />
         <FinalCta />
       </main>
-
       <Footer />
-      <WhatsAppCta
-        label=""
-        className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#1e7651] text-white shadow-xl shadow-forest/25 transition hover:scale-105 md:hidden"
-        aria-label="Agendar pelo WhatsApp"
-      />
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-sage bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden">
-        <WhatsAppCta className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-forest px-5 text-sm font-semibold text-white" />
-      </div>
+      <WhatsAppCta label="" ariaLabel="Agendar no WhatsApp" className="fixed bottom-6 right-6 z-50 hidden h-14 w-14 items-center justify-center rounded-full bg-forest text-white shadow-xl md:flex" />
+      <nav aria-label="Contato rápido" className="mobile-contact fixed inset-x-0 bottom-0 z-50 border-t border-sage bg-white md:hidden">
+        <div className="mx-auto grid h-[55px] max-w-lg grid-cols-[minmax(0,1fr)_48px_88px] items-center gap-2 px-2">
+          <WhatsAppCta showIcon={false} className="flex min-h-12 items-center justify-center rounded-full bg-forest px-2 text-[13px] font-semibold text-white" />
+          <TrackedLink href={`tel:${site.phone}`} action="phone" className="flex min-h-12 items-center justify-center text-[13px] font-semibold text-forest">Ligar</TrackedLink>
+          <TrackedLink href={site.google.directionsUrl} action="directions" external className="flex min-h-12 items-center justify-center text-[13px] font-semibold text-forest">Como chegar</TrackedLink>
+        </div>
+      </nav>
     </>
   );
 }

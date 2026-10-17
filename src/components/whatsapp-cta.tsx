@@ -6,17 +6,22 @@ type WhatsAppCtaProps = {
   label?: string;
   className?: string;
   showIcon?: boolean;
+  message?: string;
+  ariaLabel?: string;
 };
 
 export function WhatsAppCta({
   label = "Agendar no WhatsApp",
   className = "",
   showIcon = true,
+  message = site.whatsapp.message,
+  ariaLabel,
 }: WhatsAppCtaProps) {
   return (
     <WhatsAppLink
-      href={`https://wa.me/${site.whatsapp.phone.replace(/\D/g, "")}?text=${encodeURIComponent(site.whatsapp.message)}`}
+      href={`https://wa.me/${site.whatsapp.phone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`}
       className={className}
+      aria-label={ariaLabel || label}
     >
       {showIcon && <WhatsAppIcon className="h-5 w-5 shrink-0" />}
       <span>{label}</span>

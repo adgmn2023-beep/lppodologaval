@@ -1,132 +1,138 @@
-export const site = {
-  name: "Studio Val",
-  descriptor: "Podologia Campo Grande",
-  professionalName: "Cláudia Val",
-  title: "Podologia clínica em Campo Grande, Rio de Janeiro | Studio Val",
-  description:
-    "Atendimento de podologia clínica em Campo Grande, Rio de Janeiro. Conheça os serviços e fale comigo pelo WhatsApp.",
-  locale: "pt_BR",
-  whatsapp: {
-    phone: "", // TODO: preencher com DDI + DDD + número, somente dígitos.
-    message: "Olá, Val! Gostaria de saber mais sobre o atendimento de podologia.",
-  },
-  phone: "", // TODO: preencher com telefone público, incluindo DDI e DDD.
-  google: {
-    businessProfileUrl: "", // TODO: preencher com o link da ficha oficial no Google.
-    reviewsUrl: "", // TODO: preencher com o link para ver todas as avaliações.
-    writeReviewUrl: "", // TODO: preencher com o link para deixar uma avaliação.
-    directionsUrl: "", // TODO: preencher com o link de rotas do Google Maps.
-    mapEmbedUrl: "", // TODO: preencher com a URL de incorporação do mapa.
-  },
-  address: {
-    streetAddress: "", // TODO: preencher com logradouro e número.
-    addressLocality: "Rio de Janeiro",
-    addressRegion: "RJ",
-    postalCode: "", // TODO: preencher com CEP.
-    neighborhood: "Campo Grande",
-    country: "BR",
-    latitude: null as number | null, // TODO: preencher com latitude confirmada.
-    longitude: null as number | null, // TODO: preencher com longitude confirmada.
-  },
-  openingHours: [] as OpeningHour[], // TODO: preencher apenas os horários reais de atendimento.
-  sameAs: [] as string[], // TODO: incluir somente perfis oficiais confirmados.
-  services: [
-    {
-      title: "Unha encravada",
-      description:
-        "Avaliação e cuidado podológico para unhas encravadas, com atenção ao conforto e à saúde dos pés.",
-      icon: "01",
-    },
-    {
-      title: "Calos e calosidades",
-      description:
-        "Cuidado especializado para calos e áreas de pressão, com orientação para o dia a dia.",
-      icon: "02",
-    },
-    {
-      title: "Saúde das unhas",
-      description:
-        "Avaliação de alterações nas unhas, como suspeita de micose, e orientação sobre os próximos cuidados.",
-      icon: "03",
-    },
-    {
-      title: "Pé diabético",
-      description:
-        "Cuidado preventivo e atento para os pés de pessoas com diabetes, respeitando cada necessidade.",
-      icon: "04",
-    },
-    {
-      title: "Cuidado podológico",
-      description:
-        "Atendimento cuidadoso para manter unhas e pés bem cuidados em cada etapa da vida.",
-      icon: "05",
-    },
-  ],
-  about: {
-    photoSrc: "/images/portrait-placeholder.svg", // TODO: substituir pela foto profissional autorizada da Val.
-    photoAlt: "Ilustração provisória para substituir pela foto profissional da Cláudia Val",
-    education: "", // TODO: informar formação e instituição.
-    experience: "", // TODO: informar tempo de experiência verificável.
-    paragraphs: [
-      "Eu sou Cláudia Val, podóloga clínica em Campo Grande, no Rio de Janeiro. Meu trabalho é cuidar da saúde dos pés com atenção, escuta e respeito à história de cada pessoa.",
-      "No meu consultório, cada atendimento começa com uma conversa e uma avaliação cuidadosa. Eu explico as possibilidades de cuidado com clareza e, quando necessário, oriento a procurar outros profissionais de saúde.",
-    ],
-  },
-  process: [
-    {
-      title: "Você me conta",
-      description: "Me chama no WhatsApp e conta o que está sentindo ou buscando.",
-    },
-    {
-      title: "Eu entendo seu caso",
-      description: "Eu converso com você sobre suas necessidades e esclareço suas dúvidas.",
-    },
-    {
-      title: "Combinamos o horário",
-      description: "Eu confirmo a disponibilidade e as informações para sua visita.",
-    },
-    {
-      title: "Atendimento com cuidado",
-      description: "No consultório, faço uma avaliação e explico cada etapa do atendimento.",
-    },
-  ],
-  faq: [
-    {
-      question: "Como faço para agendar uma avaliação?",
-      answer:
-        "Você pode me chamar pelo WhatsApp. Eu converso com você, esclareço suas dúvidas e confirmo os horários disponíveis.",
-    },
-    {
-      question: "Quais cuidados podológicos você realiza?",
-      answer:
-        "Atendo questões como unhas encravadas, calosidades, alterações nas unhas e cuidado preventivo dos pés. Eu converso com você sobre o seu caso para entender se o atendimento é adequado.",
-    },
-    {
-      question: "Você atende pessoas com diabetes?",
-      answer:
-        "Sim, o cuidado dos pés de pessoas com diabetes requer atenção individualizada. Me conte sobre seu caso antes do agendamento para conversarmos sobre suas necessidades.",
-    },
-    {
-      question: "Podologia trata micose?",
-      answer:
-        "Eu posso avaliar alterações nas unhas e orientar sobre os cuidados podológicos. A confirmação de um diagnóstico e a indicação de tratamento podem exigir avaliação médica.",
-    },
-    {
-      question: "Onde fica o consultório?",
-      answer:
-        "Meu consultório fica em Campo Grande, no Rio de Janeiro. Eu compartilho o endereço completo e as orientações de chegada quando você entra em contato.",
-    },
-    {
-      question: "Quanto custa o atendimento?",
-      answer:
-        "O valor depende do atendimento indicado para cada caso. Me chame pelo WhatsApp para conversar sobre a sua necessidade e consultar os valores atualizados.",
-    },
-  ],
-  privacyPath: "/privacidade",
-} as const;
-
 export type OpeningHour = {
   dayOfWeek: string;
+  dayIndex: number;
+  label: string;
   opens: string;
   closes: string;
 };
+
+export type ServicePrice = { service: string; from: number };
+
+const prices: ServicePrice[] = [];
+const fullAddress = "R. Augusto de Vasconcelos, nº 914, Sala 302, Campo Grande, Rio de Janeiro - RJ, CEP 23045-120";
+const businessName = "Podologia Campo Grande - Cláudia Val Podóloga";
+const mapsQuery = encodeURIComponent(`${businessName}, R. Augusto de Vasconcelos, 914, sala 302, Campo Grande, Rio de Janeiro`);
+
+export const site = {
+  images: {
+    hero: {
+      src: "/images/consultorio-recepcao.webp",
+      alt: "Recepção do consultório de podologia da Cláudia Val em Campo Grande, RJ",
+      width: 1086,
+      height: 1448,
+    },
+    about: {
+      src: "/images/podologa-claudia-val.webp",
+      alt: "Cláudia Val, podóloga, atendendo com touca, máscara e jaleco",
+      width: 616,
+      height: 770,
+    },
+  },
+  name: businessName,
+  brand: "Studio Val",
+  descriptor: "Podologia Campo Grande",
+  professionalName: "Cláudia Val",
+  title: "Podologia em Campo Grande, RJ | Podóloga Cláudia Val",
+  description: "Podóloga em Campo Grande, RJ: unha encravada, micose de unha a laser, calos, frieiras e pé diabético. Agende sua avaliação pelo WhatsApp.",
+  locale: "pt_BR",
+  whatsapp: {
+    phone: "5521980666002",
+    message: "Olá, Val! Vim pelo site e gostaria de agendar uma avaliação.",
+  },
+  phone: "+5521980666002",
+  phoneDisplay: "(21) 98066-6002",
+  google: {
+    businessProfileUrl: "", // TODO: URL da ficha oficial.
+    reviewsUrl: "", // TODO: URL para ver todas as avaliações.
+    writeReviewUrl: "", // TODO: URL para deixar avaliação.
+    placeId: "", // TODO: confirmar placeId.
+    mapEmbedUrl: "", // TODO: src do iframe de "Incorporar um mapa" da ficha.
+    mapsShareUrl: "", // TODO: link curto da ficha no Maps.
+    get directionsUrl(): string {
+      return `https://www.google.com/maps/dir/?api=1&destination=${mapsQuery}${this.placeId ? `&destination_place_id=${encodeURIComponent(this.placeId)}` : ""}`;
+    },
+    get resolvedMapEmbedUrl(): string {
+      return this.mapEmbedUrl || `https://www.google.com/maps?q=${mapsQuery}&output=embed`;
+    },
+    get mapUrl(): string {
+      return this.mapsShareUrl || `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+    },
+  },
+  address: {
+    streetAddress: "R. Augusto de Vasconcelos, nº 914, Sala 302",
+    addressLocality: "Rio de Janeiro",
+    addressRegion: "RJ",
+    postalCode: "23045-120",
+    neighborhood: "Campo Grande",
+    country: "BR",
+    full: fullAddress,
+    reference: "ao lado do Rocha Faria, no mesmo prédio da clínica CEMAV",
+    latitude: null as number | null, // TODO: coordenada confirmada.
+    longitude: null as number | null, // TODO: coordenada confirmada.
+  },
+  openingHours: [
+    { dayOfWeek: "Monday", dayIndex: 1, label: "Segunda", opens: "08:30", closes: "18:30" },
+    { dayOfWeek: "Tuesday", dayIndex: 2, label: "Terça", opens: "08:30", closes: "18:30" },
+    { dayOfWeek: "Wednesday", dayIndex: 3, label: "Quarta", opens: "08:30", closes: "18:30" },
+    { dayOfWeek: "Thursday", dayIndex: 4, label: "Quinta", opens: "08:30", closes: "18:30" },
+    { dayOfWeek: "Friday", dayIndex: 5, label: "Sexta", opens: "08:30", closes: "18:30" },
+    { dayOfWeek: "Saturday", dayIndex: 6, label: "Sábado", opens: "08:00", closes: "12:00" },
+  ] satisfies OpeningHour[],
+  hoursLabel: "Seg–sex 08:30–18:30 · sáb 08:00–12:00 · dom fechado",
+  sameAs: ["https://www.instagram.com/podologa.val/"],
+  paymentAccepted: ["Cartão de crédito", "Cartão de débito", "Pagamento por aproximação"],
+  accessibility: "Assento e banheiro acessíveis",
+  parking: "Estacionamento pago na rua",
+  appointmentRequired: true,
+  prices,
+  confirmed: { diabeticFoot: true, nailFungusLaser: true, anyRegion: true },
+  optionalServices: [
+    { title: "Avaliação online gratuita", confirmed: false, description: "Converse comigo para saber mais sobre a avaliação online." },
+    { title: "Vela terapia", confirmed: false, description: "Converse comigo para saber mais sobre esse atendimento." },
+  ],
+  services: [
+    { title: "Unhas encravadas", icon: "nail", description: "Cuido da unha do pé encravada com atenção ao seu conforto." },
+    { title: "Tratamento de micoses", icon: "laser", description: "Faço tratamento a laser quando indicado para micose de unha (onicomicose)." },
+    { title: "Pé diabético", icon: "foot", description: "Faço cuidado preventivo e atento dos pés, em conjunto com o acompanhamento do seu médico." },
+    { title: "Calos e calosidades", icon: "layers", description: "Cuido dos calos e calosidades e oriento como reduzir a pressão nos pés." },
+    { title: "Rachadura nos pés", icon: "crack", description: "Avalio as rachaduras nos pés e oriento os cuidados para a sua pele." },
+    { title: "Tratamento de frieiras", icon: "drop", description: "Avalio as frieiras e cuido da pele com atenção, orientando os cuidados para o dia a dia." },
+  ],
+  additionalServices: ["Hidratação dos pés", "Unhas infectadas", "Reflexologia", "Argiloterapia", "Tratamento de lesões cutâneas", "Órtese"],
+  region: {
+    title: "Atendo quem vem de qualquer lugar",
+    neighborhoods: ["Campo Grande", "Inhoaíba", "Cosmos", "Santa Cruz", "Sepetiba", "Guaratiba", "Bangu", "Recreio dos Bandeirantes"],
+    description: "Meu consultório fica em Campo Grande e recebo pacientes de toda a região (Inhoaíba, Cosmos, Santa Cruz, Sepetiba, Guaratiba, Bangu, Recreio dos Bandeirantes) e de outros bairros e cidades. Se você puder vir até o consultório, será muito bem-vindo.",
+  },
+  about: {
+    registration: "", // TODO: registro profissional.
+    education: "", // TODO: formação e instituição.
+    experience: "", // TODO: anos de experiência verificáveis.
+    paragraphs: [
+      "Eu sou Cláudia Val, podóloga clínica em Campo Grande, no Rio de Janeiro. Meu trabalho é cuidar da saúde dos pés com atenção, escuta e respeito à história de cada pessoa.",
+      "No meu consultório, cada atendimento começa com uma conversa e uma avaliação cuidadosa. Eu explico cada etapa com clareza e cuido do seu caso do início ao fim.",
+    ],
+  },
+  process: [
+    { title: "Você me conta", description: "Me chama no WhatsApp e conta o que está sentindo ou buscando." },
+    { title: "Eu entendo seu caso", description: "Eu converso com você sobre suas necessidades e esclareço suas dúvidas." },
+    { title: "Eu combino o horário", description: "Eu confirmo a disponibilidade e as informações para sua visita." },
+    { title: "Atendimento com cuidado", description: "No consultório, faço uma avaliação e explico cada etapa do atendimento." },
+  ],
+  faq: [
+    {
+      question: "Quanto custa uma consulta de podologia em Campo Grande?",
+      answer: prices.length
+        ? `Meus valores: ${prices.map(({ service, from }) => `${service} a partir de ${from.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`).join("; ")}. Me chame no WhatsApp para eu avaliar o que você precisa e confirmar o horário.`
+        : "O valor depende do que você precisa. Me chame no WhatsApp, envio os valores e confirmo o horário.",
+    },
+    { question: "Onde fica o consultório?", answer: `Meu consultório fica na ${fullAddress}, ao lado do Rocha Faria, no mesmo prédio da clínica CEMAV. Há estacionamento pago na rua.` },
+    { question: "Preciso agendar?", answer: "Sim, atendo com hora marcada, de segunda a sexta, das 08:30 às 18:30, e aos sábados, das 08:00 às 12:00. Me chame no WhatsApp para eu confirmar um horário. Aos domingos, o consultório fica fechado." },
+    { question: "Quais formas de pagamento?", answer: "Aceito cartão de crédito, débito e pagamento por aproximação." },
+    { question: "Como funciona o tratamento de micose de unha? Você faz laser?", answer: "Primeiro avalio a unha para entender o caso. Faço tratamento a laser quando é indicado e oriento os cuidados em casa. Em alguns casos, a confirmação do diagnóstico pode exigir exames, e eu explico isso na avaliação." },
+    { question: "Você atende pessoas com diabetes?", answer: "Sim. Atendo com cuidado e atenção redobrados aos pés de quem tem diabetes. Me conte sobre o seu caso pelo WhatsApp. Trabalho em conjunto com o acompanhamento do seu médico." },
+    { question: "Tem acessibilidade?", answer: "No meu consultório, tenho assento e banheiro acessíveis." },
+    { question: "Como faço para agendar?", answer: "Me chame no WhatsApp (21) 98066-6002. Eu converso com você, esclareço suas dúvidas e confirmo o horário para o atendimento no consultório." },
+  ],
+  privacyPath: "/privacidade",
+} as const;

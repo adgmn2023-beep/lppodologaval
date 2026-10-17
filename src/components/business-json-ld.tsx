@@ -1,12 +1,6 @@
-import type { GbpSummary } from "@/lib/gbp";
 import { site } from "@/config/site";
 
-type BusinessJsonLdProps = {
-  summary: GbpSummary;
-  includeAggregateRating: boolean;
-};
-
-export function BusinessJsonLd({ summary, includeAggregateRating }: BusinessJsonLdProps) {
+export function BusinessJsonLd() {
   const streetAddress = site.address.streetAddress;
   const sameAs = [
     ...site.sameAs,
@@ -19,6 +13,8 @@ export function BusinessJsonLd({ summary, includeAggregateRating }: BusinessJson
     description: site.description,
     url: process.env.NEXT_PUBLIC_SITE_URL || undefined,
     telephone: site.phone || undefined,
+    paymentAccepted: site.paymentAccepted.join(", "),
+    hasMap: site.google.mapUrl,
     address: streetAddress
       ? {
           "@type": "PostalAddress",
@@ -47,14 +43,6 @@ export function BusinessJsonLd({ summary, includeAggregateRating }: BusinessJson
         : undefined,
     areaServed: `${site.address.neighborhood}, ${site.address.addressLocality}`,
     sameAs: sameAs.length ? sameAs : undefined,
-    aggregateRating:
-      includeAggregateRating && summary.totalReviews > 0
-        ? {
-            "@type": "AggregateRating",
-            ratingValue: summary.averageRating,
-            reviewCount: summary.totalReviews,
-          }
-        : undefined,
   };
 
   return (

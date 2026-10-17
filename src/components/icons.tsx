@@ -2,6 +2,18 @@ import type { SVGProps } from "react";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
+export function ServiceIcon({ kind, ...props }: IconProps & { kind: string }) {
+  const paths: Record<string, string> = {
+    nail: "M7 20V8a5 5 0 0 1 10 0v12M7 12h10M10 6v3m4-3v3",
+    laser: "m4 20 9-9m-5 0 5 5m4-13v4m-2-2h4m-1 6 3 1M10 3l1 3",
+    foot: "M10 4c-3 2-3 6-2 9l-3 4c-1 2 1 4 4 4h5c3 0 4-2 3-4l-2-5V5c0-2-4-3-5-1Zm0 10 4 3m-4 0 4-3",
+    layers: "m3 8 9-5 9 5-9 5-9-5Zm0 5 9 5 9-5M3 18l9 5 9-5",
+    crack: "M7 3h10l3 9-3 9H7l-3-9 3-9Zm6 0-3 7 5 3-4 8",
+    drop: "M12 3S5 11 5 15a7 7 0 0 0 14 0c0-4-7-12-7-12Zm-3 13a3 3 0 0 0 3 3",
+  };
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}><path d={paths[kind] || paths.foot} /></svg>;
+}
+
 export function WhatsAppIcon(props: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>

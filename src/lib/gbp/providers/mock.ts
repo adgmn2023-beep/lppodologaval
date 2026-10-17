@@ -59,7 +59,7 @@ const posts: GbpPost[] = [
     id: "sample-post-1",
     image: "/images/post-care.svg",
     imageAlt: "Ilustração sobre cuidado e saúde dos pés",
-    text: "Cuidar dos pés também é uma forma de cuidar da saúde. Observe mudanças e procure orientação profissional quando precisar.",
+    text: "Cuido dos seus pés com atenção. Me conte sobre as mudanças que você percebeu para eu avaliar seu caso.",
     relativeDate: "publicado recentemente",
     ctaLabel: "Fale comigo",
     ctaUrl: "whatsapp",

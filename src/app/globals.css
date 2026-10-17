@@ -10,7 +10,8 @@
 body {
   background: #fff;
   color: #20342d;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
   -webkit-font-smoothing: antialiased;
 }
 
@@ -21,6 +22,19 @@ body {
 
 summary::-webkit-details-marker {
   display: none;
+}
+
+.mobile-contact {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+a:focus-visible, summary:focus-visible {
+  outline: 3px solid #244b3e;
+  outline-offset: 3px;
+}
+
+@media (min-width: 768px) {
+  body { padding-bottom: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

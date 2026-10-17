@@ -1,11 +1,13 @@
 import type { GbpProvider } from "./provider";
 import { mockGbpProvider } from "./providers/mock";
+import { manualGbpProvider } from "./providers/manual";
 
 const providers: Record<string, GbpProvider> = {
+  manual: manualGbpProvider,
   mock: mockGbpProvider,
 };
 
-const providerName = process.env.GBP_PROVIDER || "mock";
+const providerName = process.env.GBP_PROVIDER || "manual";
 const provider = providers[providerName];
 
 if (!provider) {

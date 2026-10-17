@@ -5,11 +5,11 @@ const config = {
     extend: {
       colors: {
         forest: "#244b3e",
-        leaf: "#477d68",
+        leaf: "#3d6d5a",
         sage: "#e5eee7",
         cream: "#f7f6f1",
         ink: "#20342d",
-        muted: "#65746d",
+        muted: "#52635a",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "Arial", "sans-serif"],
