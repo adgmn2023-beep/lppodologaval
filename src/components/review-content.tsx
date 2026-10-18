@@ -32,10 +32,10 @@ export function ReviewText({ text }: { text: string }) {
   }, [expanded, text]);
 
   return (
-    <div className="mb-5 text-base leading-7 text-ink">
+    <div className="mb-5 text-base leading-7 text-body">
       <p ref={paragraph} id={id} className={expanded ? "" : "line-clamp-5"}>{text}</p>
       {(expanded || overflows) && (
-        <button type="button" aria-expanded={expanded} aria-controls={id} onClick={() => setExpanded(!expanded)} className="mt-2 flex min-h-12 cursor-pointer items-center rounded-sm font-semibold text-leaf underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-forest focus-visible:outline-offset-2">
+        <button type="button" aria-expanded={expanded} aria-controls={id} onClick={() => setExpanded(!expanded)} className="mt-2 flex min-h-12 cursor-pointer items-center rounded-sm font-semibold text-accent underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2">
           {expanded ? "Ler menos" : "Ler mais"}
         </button>
       )}

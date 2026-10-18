@@ -1,6 +1,7 @@
 import { site } from "@/config/site";
 
 export function BusinessJsonLd() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   const streetAddress = site.address.streetAddress;
   const sameAs = [
     ...site.sameAs,
@@ -12,9 +13,11 @@ export function BusinessJsonLd() {
     name: site.name,
     description: site.description,
     url: process.env.NEXT_PUBLIC_SITE_URL || undefined,
+    logo: siteUrl ? new URL("/images/studio-val-logo.webp", siteUrl).toString() : undefined,
+    image: siteUrl ? new URL("/images/og-studio-val.jpg", siteUrl).toString() : undefined,
     telephone: site.phone || undefined,
     paymentAccepted: site.paymentAccepted.join(", "),
-    hasMap: site.google.mapUrl,
+    hasMap: `https://www.google.com/maps?q=${encodeURIComponent(`${site.name}, ${site.address.streetAddress}, ${site.address.neighborhood}, ${site.address.addressLocality}`)}&ll=${site.geo.lat},${site.geo.lng}&z=17`,
     address: streetAddress
       ? {
           "@type": "PostalAddress",

@@ -13,7 +13,6 @@ export const metadata: Metadata = {
   title: site.title,
   description: site.description,
   applicationName: site.name,
-  icons: { icon: "/images/logo-mark.svg" },
   alternates: siteUrl ? { canonical: siteUrl } : undefined,
   openGraph: {
     type: "website",
@@ -22,15 +21,13 @@ export const metadata: Metadata = {
     title: site.title,
     description: site.description,
     url: siteUrl,
-    images: siteUrl
-      ? [{ url: site.images.hero.src, width: site.images.hero.width, height: site.images.hero.height, alt: site.images.hero.alt }]
-      : undefined,
+    images: [{ url: "/images/og-studio-val.jpg", width: 1200, height: 630, alt: "Studio Val Podologia" }],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: site.title,
     description: site.description,
-    images: siteUrl ? [site.images.hero.src] : undefined,
+    images: [{ url: "/images/og-studio-val.jpg", width: 1200, height: 630, alt: "Studio Val Podologia" }],
   },
   robots: { index: Boolean(siteUrl), follow: Boolean(siteUrl) },
 };
@@ -38,7 +35,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#f7f6f1",
+  themeColor: "#0B0B0C",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

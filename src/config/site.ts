@@ -11,9 +11,11 @@ export type ServicePrice = { service: string; from: number };
 const prices: ServicePrice[] = [];
 const fullAddress = "R. Augusto de Vasconcelos, nº 914, Sala 302, Campo Grande, Rio de Janeiro - RJ, CEP 23045-120";
 const businessName = "Podologia Campo Grande - Cláudia Val Podóloga";
+const geo = { lat: -22.9099895, lng: -43.563208 };
 const mapsQuery = encodeURIComponent(`${businessName}, R. Augusto de Vasconcelos, 914, sala 302, Campo Grande, Rio de Janeiro`);
 
 export const site = {
+  geo,
   images: {
     hero: {
       src: "/images/consultorio-recepcao.webp",
@@ -47,12 +49,12 @@ export const site = {
     writeReviewUrl: "", // TODO: URL para deixar avaliação.
     placeId: "", // TODO: confirmar placeId.
     mapEmbedUrl: "", // TODO: src do iframe de "Incorporar um mapa" da ficha.
-    mapsShareUrl: "", // TODO: link curto da ficha no Maps.
+    mapsShareUrl: "https://maps.app.goo.gl/NbS6hcnnHvjgb3qu7",
     get directionsUrl(): string {
       return `https://www.google.com/maps/dir/?api=1&destination=${mapsQuery}${this.placeId ? `&destination_place_id=${encodeURIComponent(this.placeId)}` : ""}`;
     },
     get resolvedMapEmbedUrl(): string {
-      return this.mapEmbedUrl || `https://www.google.com/maps?q=${mapsQuery}&output=embed`;
+      return this.mapEmbedUrl || `https://www.google.com/maps?q=${mapsQuery}&ll=${geo.lat},${geo.lng}&z=17&output=embed`;
     },
     get mapUrl(): string {
       return this.mapsShareUrl || `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
@@ -67,8 +69,8 @@ export const site = {
     country: "BR",
     full: fullAddress,
     reference: "ao lado do Rocha Faria, no mesmo prédio da clínica CEMAV",
-    latitude: null as number | null, // TODO: coordenada confirmada.
-    longitude: null as number | null, // TODO: coordenada confirmada.
+    latitude: geo.lat,
+    longitude: geo.lng,
   },
   openingHours: [
     { dayOfWeek: "Monday", dayIndex: 1, label: "Segunda", opens: "08:30", closes: "18:30" },

@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
-  <rect width="800" height="500" fill="#F2F3EB"/>
-  <circle cx="400" cy="240" r="155" fill="#E0EADF"/>
+  <rect width="800" height="500" fill="#FBF8F2"/>
+  <circle cx="400" cy="240" r="155" fill="#F2ECDF"/>
   <path d="M323 148c24-34 69-41 105-20 27 16 41 43 68 57 42 21 78 45 91 88 10 34-2 69-27 92H278c-28-73-20-167 45-217Z" fill="#F1D8C8"/>
   <path d="M448 162c12-14 32-15 45-3 10 9 11 23 1 34-12 13-32 14-44 3-10-9-11-24-2-34Z" fill="#D5AA8E"/>
-  <path d="M207 206c-1-45 35-81 80-81 19 0 37 7 51 20-26 6-47 24-56 48-12 30-36 47-75 49v-36Z" fill="#477D68"/>
-  <path d="M223 322h356M258 363h282" stroke="#9BB9A4" stroke-width="8" stroke-linecap="round"/>
-  <text x="400" y="451" text-anchor="middle" font-family="Arial,sans-serif" font-size="19" letter-spacing="3" fill="#244B3E">ATENÇÃO PREVENTIVA</text>
+  <path d="M207 206c-1-45 35-81 80-81 19 0 37 7 51 20-26 6-47 24-56 48-12 30-36 47-75 49v-36Z" fill="#8A6312"/>
+  <path d="M223 322h356M258 363h282" stroke="#8A6312" stroke-width="8" stroke-linecap="round"/>
+  <text x="400" y="451" text-anchor="middle" font-family="Arial,sans-serif" font-size="19" letter-spacing="3" fill="#0B0B0C">ATENÇÃO PREVENTIVA</text>
 </svg>

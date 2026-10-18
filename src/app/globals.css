@@ -2,22 +2,53 @@
 @config "../../tailwind.config.mjs";
 
 :root {
+  --ink: #0B0B0C;
+  --ink-2: #161617;
+  --gold: #D9AA4A;
+  --gold-light: #F1D58E;
+  --gold-deep: #8A6312;
+  --ivory: #FBF8F2;
+  --ivory-2: #F2ECDF;
+  --white: #FFFFFF;
+  --text-on-ivory: #1C1B19;
+  --muted-on-ivory: #5B564C;
+  --text-on-ink: #F5F1E8;
+  --muted-on-ink: #B9B2A3;
+  --line-light: rgba(11, 11, 12, .12);
+  --line-dark: rgba(217, 170, 74, .25);
+  --text: var(--text-on-ivory);
+  --heading: var(--ink);
+  --muted: var(--muted-on-ivory);
+  --accent: var(--gold-deep);
+  --line: var(--line-light);
+  --focus: var(--ink);
   color-scheme: light;
   scroll-behavior: smooth;
   scroll-padding-top: 88px;
 }
 
 body {
-  background: #fff;
-  color: #20342d;
+  background: var(--ivory);
+  color: var(--text);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
   -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: #dce9df;
-  color: #244b3e;
+  background: var(--gold-light);
+  color: var(--ink);
+}
+
+.surface-dark {
+  --text: var(--text-on-ink);
+  --heading: var(--text-on-ink);
+  --muted: var(--muted-on-ink);
+  --accent: var(--gold-light);
+  --line: var(--line-dark);
+  --focus: var(--gold-light);
+  color-scheme: dark;
+  color: var(--text);
 }
 
 summary::-webkit-details-marker {
@@ -28,8 +59,9 @@ summary::-webkit-details-marker {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-a:focus-visible, summary:focus-visible {
-  outline: 3px solid #244b3e;
+:is(a, button, summary):focus-visible,
+.surface-dark :is(a, button, summary):focus-visible {
+  outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
 

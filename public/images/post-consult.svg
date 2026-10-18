@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
-  <rect width="800" height="500" fill="#E8EEE8"/>
-  <rect x="118" y="80" width="564" height="340" rx="30" fill="#F7F6F1"/>
-  <rect x="154" y="116" width="202" height="244" rx="18" fill="#DCE9DF"/>
-  <path d="M208 296c17-42 45-65 83-65 39 0 66 23 83 65H208Z" fill="#477D68"/>
+  <rect width="800" height="500" fill="#F2ECDF"/>
+  <rect x="118" y="80" width="564" height="340" rx="30" fill="#FBF8F2"/>
+  <rect x="154" y="116" width="202" height="244" rx="18" fill="#F1D58E"/>
+  <path d="M208 296c17-42 45-65 83-65 39 0 66 23 83 65H208Z" fill="#8A6312"/>
   <circle cx="291" cy="191" r="48" fill="#D6B29B"/>
   <path d="M243 190c2-29 20-49 49-49 26 0 44 19 48 45-18-4-33-15-42-30-13 18-33 29-55 34Z" fill="#51463D"/>
-  <rect x="393" y="135" width="239" height="18" rx="9" fill="#9BB9A4"/>
-  <rect x="393" y="177" width="190" height="12" rx="6" fill="#D0DED2"/>
-  <rect x="393" y="205" width="218" height="12" rx="6" fill="#D0DED2"/>
-  <rect x="393" y="266" width="166" height="50" rx="25" fill="#244B3E"/>
+  <rect x="393" y="135" width="239" height="18" rx="9" fill="#8A6312"/>
+  <rect x="393" y="177" width="190" height="12" rx="6" fill="#F2ECDF"/>
+  <rect x="393" y="205" width="218" height="12" rx="6" fill="#F2ECDF"/>
+  <rect x="393" y="266" width="166" height="50" rx="25" fill="#0B0B0C"/>
   <text x="476" y="297" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="white">ATENDIMENTO</text>
-  <text x="400" y="461" text-anchor="middle" font-family="Arial,sans-serif" font-size="19" letter-spacing="3" fill="#244B3E">CUIDADO INDIVIDUALIZADO</text>
+  <text x="400" y="461" text-anchor="middle" font-family="Arial,sans-serif" font-size="19" letter-spacing="3" fill="#0B0B0C">CUIDADO INDIVIDUALIZADO</text>
 </svg>
