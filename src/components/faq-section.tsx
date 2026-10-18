@@ -3,7 +3,7 @@ import { SectionHeading } from "./section-heading";
 
 export function FaqSection() {
   return (
-    <section className="bg-ivory-2 px-5 py-14 sm:px-8 md:py-24">
+    <section className="bg-ivory px-5 py-14 sm:px-8 md:py-24">
       <div className="mx-auto max-w-3xl">
         <SectionHeading
           eyebrow="Dúvidas frequentes"

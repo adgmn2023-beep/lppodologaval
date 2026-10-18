@@ -13,5 +13,5 @@ export function OpeningStatus({ hours, hoursLabel }: { hours: readonly OpeningHo
     return () => { cancelAnimationFrame(frame); clearInterval(interval); };
   }, [hours]);
   const isOpen = status.startsWith("Aberto agora");
-  return <p className="flex min-h-12 items-start gap-2 text-sm font-semibold leading-6 text-heading" aria-live="polite"><span aria-hidden="true" className={`mt-2 h-2 w-2 shrink-0 rounded-full ${isOpen ? "bg-[#3DD68C]" : "bg-muted-on-ink"}`} /><span>{status}</span></p>;
+  return <p className="flex min-h-12 items-start gap-2 text-sm font-semibold leading-6 text-muted" aria-live="polite"><span aria-hidden="true" className={`mt-2 h-2 w-2 shrink-0 rounded-full ${isOpen ? "bg-gold-deep" : "bg-muted"}`} /><span>{status}</span></p>;
 }
