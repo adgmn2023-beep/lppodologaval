@@ -111,8 +111,12 @@ export const site = {
     education: "", // TODO: formação e instituição.
     experience: "", // TODO: anos de experiência verificáveis.
     paragraphs: [
-      "Eu sou Cláudia Val, podóloga clínica em Campo Grande, no Rio de Janeiro. Meu trabalho é cuidar da saúde dos pés com atenção, escuta e respeito à história de cada pessoa.",
-      "No meu consultório, cada atendimento começa com uma conversa e uma avaliação cuidadosa. Eu explico cada etapa com clareza e cuido do seu caso do início ao fim.",
+      "Olá, eu sou a Val, podóloga com mais de 15 anos de experiência, dedicada ao cuidado e à saúde dos pés em Campo Grande, no Rio de Janeiro.",
+      "Sou apaixonada pela podologia e acredito que cuidar dos pés vai muito além de uma questão estética: é também cuidar do bem-estar, do conforto e da qualidade de vida de cada pessoa.",
+      "Ao longo da minha trajetória, participei de eventos nacionais e internacionais da área, como a PodoActiva e o CIAP, ampliando meus conhecimentos e acompanhando de perto as novidades e os avanços da podologia. Acredito que a excelência no atendimento começa com o compromisso de aprender continuamente e aplicar esse conhecimento com responsabilidade, atenção e dedicação.",
+      "No meu consultório, cada atendimento é único. Tudo começa com uma conversa e uma avaliação cuidadosa, para que eu possa compreender suas necessidades, esclarecer suas dúvidas e explicar cada etapa do procedimento com transparência. Acompanho cada caso de perto, buscando oferecer um atendimento individualizado, humanizado e focado na saúde dos seus pés.",
+      "Meu propósito é fazer com que você se sinta acolhido, seguro e bem cuidado em cada visita, com a atenção e o respeito que seus pés merecem.",
+      "Será um prazer cuidar de você!",
     ],
   },
   process: [
