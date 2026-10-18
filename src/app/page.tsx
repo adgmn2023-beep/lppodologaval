@@ -41,8 +41,7 @@ function LocationSection() {
             </div>
             <div>
               <p className="font-semibold text-heading">Meus horários</p>
-              <p>Segunda a sexta: 08:30–18:30</p>
-              <p>Sábado: 08:00–12:00 · Domingo: fechado</p>
+              <p>{site.hoursLabel}</p>
             </div>
             <div>
               <p>Aceito cartão de crédito, débito e pagamento por aproximação.</p>
@@ -82,6 +81,7 @@ function Footer() {
           <Image src="/images/studio-val-logo.webp" alt="Studio Val Podologia" width={900} height={508} sizes="200px" className="mb-5 h-auto w-[200px]" />
           <p className="font-display text-2xl text-muted-on-ink">{site.name}</p>
           <p className="mt-2 text-base text-muted-on-ink">{site.address.full}</p>
+          <p className="mt-2 text-base text-muted-on-ink">{site.hoursLabel}</p>
           <p className="mt-3 text-[13px] leading-6 text-muted-on-ink">© {new Date().getFullYear()} {site.name}. Conteúdo informativo.</p>
         </div>
         <div className="flex flex-wrap gap-2 text-base text-muted-on-ink">
@@ -168,7 +168,7 @@ export default async function HomePage() {
             </div>
             <div className="mt-7"><p className="mb-3 font-semibold text-heading">Também atendo:</p><ul className="flex flex-wrap gap-2">{site.additionalServices.map((service) => <li key={service} className="rounded-full border border-gold-deep/30 bg-ivory-2 px-3 py-2 text-[13px] text-body">{service}</li>)}</ul></div>
             {site.prices.length > 0 && <ul className="mt-7 space-y-2 text-base text-heading">{site.prices.map((price) => <li key={price.service}>{price.service}: a partir de {price.from.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</li>)}</ul>}
-            <p className="mt-6 text-[13px] leading-6 text-muted">Em caso de febre, pus, vermelhidão que se espalha ou dor intensa, procure atendimento médico.</p>
+            <p className="mt-6 text-[13px] leading-6 text-muted">Entre em contato para mais informações.</p>
             <div className="mt-7 text-center"><WhatsAppCta className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-gold px-6 font-semibold text-ink transition hover:bg-gold-light sm:w-auto" /></div>
           </div>
         </section>

@@ -8,6 +8,18 @@ export type OpeningHour = {
 
 export type ServicePrice = { service: string; from: number };
 
+const weekdayHours = { opens: "08:30", closes: "17:30" };
+const saturdayHours = { opens: "08:00", closes: "12:00" };
+const openingHours: OpeningHour[] = [
+  { dayOfWeek: "Monday", dayIndex: 1, label: "Segunda", ...weekdayHours },
+  { dayOfWeek: "Tuesday", dayIndex: 2, label: "Terça", ...weekdayHours },
+  { dayOfWeek: "Wednesday", dayIndex: 3, label: "Quarta", ...weekdayHours },
+  { dayOfWeek: "Thursday", dayIndex: 4, label: "Quinta", ...weekdayHours },
+  { dayOfWeek: "Friday", dayIndex: 5, label: "Sexta", ...weekdayHours },
+  { dayOfWeek: "Saturday", dayIndex: 6, label: "Sábado", ...saturdayHours },
+];
+const hoursLabel = `Seg–sex ${weekdayHours.opens}–${weekdayHours.closes} · Sáb ${saturdayHours.opens}–${saturdayHours.closes} · Dom fechado`;
+
 const prices: ServicePrice[] = [];
 const fullAddress = "R. Augusto de Vasconcelos, nº 914, Sala 302, Campo Grande, Rio de Janeiro - RJ, CEP 23045-120";
 const businessName = "Podologia Campo Grande - Cláudia Val Podóloga";
@@ -35,7 +47,7 @@ export const site = {
   descriptor: "Podologia Campo Grande",
   professionalName: "Cláudia Val",
   title: "Podologia em Campo Grande, RJ | Podóloga Cláudia Val",
-  description: "Podóloga em Campo Grande, RJ: unha encravada, micose de unha a laser, calos, frieiras e pé diabético. Agende sua avaliação pelo WhatsApp.",
+  description: `Podóloga em Campo Grande, RJ: unha encravada, micose de unha a laser, calos, frieiras e pé diabético. Agende sua avaliação pelo WhatsApp. ${hoursLabel}.`,
   locale: "pt_BR",
   whatsapp: {
     phone: "5521980666002",
@@ -72,15 +84,8 @@ export const site = {
     latitude: geo.lat,
     longitude: geo.lng,
   },
-  openingHours: [
-    { dayOfWeek: "Monday", dayIndex: 1, label: "Segunda", opens: "08:30", closes: "17:30" },
-    { dayOfWeek: "Tuesday", dayIndex: 2, label: "Terça", opens: "08:30", closes: "17:30" },
-    { dayOfWeek: "Wednesday", dayIndex: 3, label: "Quarta", opens: "08:30", closes: "17:30" },
-    { dayOfWeek: "Thursday", dayIndex: 4, label: "Quinta", opens: "08:30", closes: "17:30" },
-    { dayOfWeek: "Friday", dayIndex: 5, label: "Sexta", opens: "08:30", closes: "17:30" },
-    { dayOfWeek: "Saturday", dayIndex: 6, label: "Sábado", opens: "08:00", closes: "12:00" },
-  ] satisfies OpeningHour[],
-  hoursLabel: "Seg–sex 08:30–17:30 · sáb 08:00–12:00 · dom fechado",
+  openingHours,
+  hoursLabel,
   sameAs: ["https://www.instagram.com/podologa.val/"],
   paymentAccepted: ["Cartão de crédito", "Cartão de débito", "Pagamento por aproximação"],
   accessibility: "Assento e banheiro acessíveis",
@@ -133,7 +138,7 @@ export const site = {
         : "O valor depende do que você precisa. Me chame no WhatsApp, envio os valores e confirmo o horário.",
     },
     { question: "Onde fica o consultório?", answer: `Meu consultório fica na ${fullAddress}, ao lado do Rocha Faria, no mesmo prédio da clínica CEMAV. Há estacionamento pago na rua.` },
-    { question: "Preciso agendar?", answer: "Sim, atendo com hora marcada, de segunda a sexta, das 08:30 às 17:30, e aos sábados, das 08:00 às 12:00. Me chame no WhatsApp para eu confirmar um horário. Aos domingos, o consultório fica fechado." },
+    { question: "Preciso agendar?", answer: `Sim, atendo com hora marcada, de segunda a sexta, das ${weekdayHours.opens} às ${weekdayHours.closes}, e aos sábados, das ${saturdayHours.opens} às ${saturdayHours.closes}. Me chame no WhatsApp para eu confirmar um horário. Aos domingos, o consultório fica fechado.` },
     { question: "Quais formas de pagamento?", answer: "Aceito cartão de crédito, débito e pagamento por aproximação." },
     { question: "Como funciona o tratamento de micose de unha? Você faz laser?", answer: "Primeiro avalio a unha para entender o caso. Faço tratamento a laser quando é indicado e oriento os cuidados em casa. Em alguns casos, a confirmação do diagnóstico pode exigir exames, e eu explico isso na avaliação." },
     { question: "Você atende pessoas com diabetes?", answer: "Sim. Atendo com cuidado e atenção redobrados aos pés de quem tem diabetes. Me conte sobre o seu caso pelo WhatsApp. Trabalho em conjunto com o acompanhamento do seu médico." },
