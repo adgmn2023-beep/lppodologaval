@@ -4,6 +4,7 @@ import { site } from "@/config/site";
 import { formatReviewDate } from "@/lib/relative-date";
 import type { GbpProvider } from "../provider";
 import type { GbpPost, GbpReview, GbpSnapshot, GbpSummary } from "../types";
+import { cleanGoogleReview, selectReviews } from "../review-selection";
 import { manualGbpProvider } from "./manual";
 
 const REVALIDATE = 21_600;
@@ -76,8 +77,8 @@ function minStars(): number {
 }
 
 function maxPostAge(): number {
-  const value = Number(process.env.GBP_POSTS_MAX_AGE_DAYS || "90");
-  return Number.isFinite(value) && value >= 0 ? value : 90;
+  const value = Number(process.env.GBP_POSTS_MAX_AGE_DAYS || "365");
+  return Number.isFinite(value) && value >= 0 ? value : 365;
 }
 
 function configuration() {
@@ -140,7 +141,7 @@ function readReviews(payload: Record<string, unknown>): { summary: GbpSummary; r
   const reviews: GbpReview[] = [];
   for (const value of list(payload.reviews)) {
     const review = record(value);
-    const text = optionalString(review.comment);
+    const text = cleanGoogleReview(optionalString(review.comment));
     if (!text.trim()) continue;
     const star = string(review.starRating);
     if (!Object.hasOwn(stars, star)) invalid();
@@ -149,13 +150,14 @@ function readReviews(payload: Record<string, unknown>): { summary: GbpSummary; r
     if (reviewer.isAnonymous !== undefined && typeof reviewer.isAnonymous !== "boolean") invalid();
     const names = optionalString(reviewer.displayName).trim().split(/\s+/u).filter(Boolean);
     const authorName = reviewer.isAnonymous || !names.length ? "Cliente do Google" : names.length === 1 ? names[0] : `${names[0]} ${Array.from(names[names.length - 1])[0]}.`;
-    const date = dateLabel(timestamp(review.createTime));
+    const created = timestamp(review.createTime);
+    const date = new Date(created).toISOString();
     const reply = review.reviewReply === undefined ? undefined : optionalString(record(review.reviewReply).comment);
     const id = string(review.reviewId);
     if (!id) invalid();
-    if (rating >= minStars()) reviews.push({ id, authorName, rating, text, date, relativeDate: formatReviewDate(date), ...(reply ? { ownerReply: reply } : {}) });
+    if (rating >= minStars()) reviews.push({ id, authorName, rating, text, date, relativeDate: formatReviewDate(dateLabel(created)), ...(reply ? { ownerReply: reply } : {}) });
   }
-  return { summary: { averageRating: average, totalReviews: total }, reviews };
+  return { summary: { averageRating: average, totalReviews: total }, reviews: selectReviews(reviews, minStars()) };
 }
 
 function readPosts(payload: Record<string, unknown>): GbpPost[] {
@@ -163,7 +165,7 @@ function readPosts(payload: Record<string, unknown>): GbpPost[] {
   const oldest = now - maxPostAge() * 86_400_000;
   return list(payload.localPosts).map(record).filter((post) => post.state === "LIVE").map((post) => ({ post, time: timestamp(post.createTime) }))
     .filter(({ time }) => time >= oldest && time <= now)
-    .sort((a, b) => b.time - a.time).slice(0, 3).map(({ post, time }, index) => {
+    .sort((a, b) => b.time - a.time).slice(0, 8).map(({ post, time }, index) => {
       const text = optionalString(post.summary);
       const media = list(post.media);
       const image = media.length ? safeUrl(record(media[0]).googleUrl) : "";
@@ -210,7 +212,7 @@ async function load(): Promise<GbpSnapshot> {
     const base = `https://mybusiness.googleapis.com/v4/accounts/${config.account}/locations/${config.location}`;
     const [reviews, posts, hours] = await Promise.all([
       get(`${base}/reviews?pageSize=50&orderBy=updateTime%20desc`, bearer),
-      get(`${base}/localPosts?pageSize=10`, bearer),
+      get(`${base}/localPosts?pageSize=20`, bearer),
       get(`https://mybusinessbusinessinformation.googleapis.com/v1/locations/${config.location}?readMask=regularHours`, bearer),
     ]);
     const data = readReviews(reviews);
@@ -219,7 +221,7 @@ async function load(): Promise<GbpSnapshot> {
     return { ...data, posts: mappedPosts, source: "google" };
   } catch {
     const [summary, reviews, posts] = await Promise.all([manualGbpProvider.getSummary(), manualGbpProvider.getReviews(), manualGbpProvider.getPosts()]);
-    return { summary, reviews: reviews.filter((review) => review.rating >= minStars()), posts, source: "manual-fallback" };
+    return { summary, reviews: selectReviews(reviews, minStars()), posts, source: "manual-fallback" };
   }
 }
 

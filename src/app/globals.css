@@ -78,3 +78,32 @@ summary::-webkit-details-marker {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* One grid row keeps server-rendered cards at a uniform height. */
+.carousel-track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 88%;
+  grid-auto-rows: 1fr;
+  gap: 1rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.carousel-track::-webkit-scrollbar { display: none; }
+.carousel-slide { display: flex; min-width: 0; scroll-snap-align: start; }
+.carousel-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--gold-deep);
+  cursor: pointer;
+}
+@media (min-width: 640px) { .carousel-track { grid-auto-columns: calc((100% - 1rem) / 2); } }
+@media (min-width: 1024px) { .carousel-track { grid-auto-columns: calc((100% - 2rem) / 3); } }

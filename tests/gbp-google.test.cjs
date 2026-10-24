@@ -90,10 +90,10 @@ test("maps Google data, anonymizes names, filters reviews/posts and reads only t
   const provider = h.load("src/lib/gbp/providers/google.ts");
   const [summary, reviews, posts] = await Promise.all([provider.googleGbpProvider.getSummary(), provider.googleGbpProvider.getReviews(), provider.googleGbpProvider.getPosts()]);
   assert.equal(summary.averageRating, 4.9); assert.equal(summary.totalReviews, 161);
-  assert.deepEqual(Array.from(reviews, (r) => r.authorName), ["Ursula S.", "Cliente do Google", "Val"]);
+  assert.deepEqual(Array.from(reviews, (r) => r.authorName), ["Ursula S.", "Cliente do Google"]);
   assert.equal(reviews[0].ownerReply, "Obrigada!"); assert.equal(reviews[0].relativeDate, "há 1 dia");
   assert(!JSON.stringify(reviews).includes("profilePhoto")); assert(!JSON.stringify(reviews).includes("Hidden Person"));
-  assert.deepEqual(Array.from(posts, (p) => p.text), ["Post first", "Post second", "Post third"]);
+  assert.deepEqual(Array.from(posts, (p) => p.text), ["Post first", "Post second", "Post third", "Post fourth"]);
   assert.equal(posts[1].image, ""); assert.equal(posts[0].searchUrl, "https://www.google.com/search?q=post-first");
   assert.equal(posts[0].ctaUrl, "https://example.test/first");
   assert.equal(h.calls.length, 4); assert.equal(h.warnings.length, 0);
@@ -199,12 +199,56 @@ test("status returns only aggregate fields, distinguishes fallback and disables 
   assert.equal(body.rating, null); assert.equal(body.total, 0); assert.equal(body.ok, true);
 });
 
-test("posts render at most three cards, native optional lazy media, limited text and safe links", () => {
+test("posts render at most eight server-rendered slides with lazy media, clamped text and no dates", () => {
   const h = harness(); const { PostsSection } = h.load("src/components/posts-section.tsx");
   assert.equal(renderToStaticMarkup(React.createElement(PostsSection, { posts: [], isMock: false })), "");
-  const posts = Array.from({ length: 4 }, (_, i) => ({ id: String(i), text: "A".repeat(400), image: i === 0 ? "https://example.test/image.jpg" : "", imageAlt: "Consultório", relativeDate: "há 1 dia", ctaUrl: "", ctaLabel: "", searchUrl: i === 0 ? "https://www.google.com/search?q=post" : "" }));
+  const posts = Array.from({ length: 10 }, (_, i) => ({ id: String(i), text: "A".repeat(400), image: i === 0 ? "https://example.test/image.jpg" : "", imageAlt: "Consultório", relativeDate: "há 1 dia", date: "2026-10-23", ctaUrl: "", ctaLabel: "", searchUrl: i === 0 ? "https://www.google.com/search?q=post" : "" }));
   const html = renderToStaticMarkup(React.createElement(PostsSection, { posts, isMock: false }));
-  assert.equal((html.match(/<article/g) || []).length, 3); assert.equal((html.match(/<img/g) || []).length, 1);
-  assert(html.includes('loading="lazy"')); assert(html.includes("A".repeat(219) + "…")); assert(!html.includes("A".repeat(220)));
+  assert.equal((html.match(/<article/g) || []).length, 8); assert.equal((html.match(/<img/g) || []).length, 1);
+  assert(html.includes('loading="lazy"')); assert(html.includes('decoding="async"')); assert(html.includes("line-clamp-4"));
+  assert(html.includes('aria-roledescription="carrossel"')); assert(html.includes('aria-label="8 de 8"'));
+  for (const value of ["há 1 dia", "2026-10-23", "<time"]) assert(!html.includes(value));
   assert.equal((html.match(/Ver no Google/g) || []).length, 1); assert(!html.includes('href=""')); assert(html.includes("Postagens recentes do Google"));
+});
+
+test("cleans both Google translation formats and drops empty originals", async () => {
+  const h = harness();
+  const { cleanGoogleReview } = h.load("src/lib/gbp/review-selection.ts");
+  assert.equal(cleanGoogleReview("  Ótimo   cuidado! \n (Translated by Google) Great care!"), "Ótimo cuidado!");
+  assert.equal(cleanGoogleReview(" (Translated by Google) Great care! (Original)  Ótimo \n cuidado! "), "Ótimo cuidado!");
+  assert.equal(cleanGoogleReview("(Translated by Google) Translation without original"), "");
+  assert.equal(cleanGoogleReview("(Translated by Google) Translation (Original)  "), "");
+  assert.equal(cleanGoogleReview("  Texto \n original  "), "Texto original");
+  h.reviews[0].comment = "(Translated by Google) Great (Original) Excelente cuidado";
+  h.reviews[1].comment = "(Translated by Google) Empty (Original) ";
+  const data = await h.load("src/lib/gbp/providers/google.ts").getGoogleSnapshot();
+  assert.equal(data.reviews.length, 1); assert.equal(data.reviews[0].text, "Excelente cuidado");
+});
+
+test("Google selects the latest twelve five-star reviews and eight LIVE posts; default age is 365 days", async () => {
+  const h = harness({ GBP_POSTS_MAX_AGE_DAYS: undefined });
+  const base = h.reviews[0];
+  h.reviews.splice(0, h.reviews.length, ...Array.from({ length: 16 }, (_, i) => ({ ...base, reviewId: `review-${i}`, createTime: new Date(initialTime - i * 86400000).toISOString(), starRating: i === 0 ? "FOUR" : "FIVE" })).reverse());
+  const post = h.posts[0];
+  h.posts.splice(0, h.posts.length, ...Array.from({ length: 12 }, (_, i) => ({ ...post, summary: `post-${i}`, createTime: new Date(initialTime - i * 20 * 86400000).toISOString(), state: i === 0 ? "PROCESSING" : "LIVE" })).reverse());
+  const data = await h.load("src/lib/gbp/providers/google.ts").getGoogleSnapshot();
+  assert.equal(data.reviews.length, 12); assert.equal(data.reviews[0].id, "review-1"); assert.equal(data.reviews[11].id, "review-12");
+  assert(data.reviews.every((r) => r.rating === 5));
+  assert.equal(data.posts.length, 8); assert.equal(data.posts[0].text, "post-1"); assert.equal(data.posts[7].text, "post-8");
+  assert(h.calls.some((c) => c.url.includes("localPosts?pageSize=20")));
+});
+
+test("manual and Google review HTML contains at most twelve slides and never renders review dates", async () => {
+  const h = harness();
+  const { ReviewsSection } = h.load("src/components/reviews-section.tsx");
+  const manual = await h.load("src/lib/gbp/providers/manual.ts").manualGbpProvider.getReviews();
+  const fixtures = Array.from({ length: 15 }, (_, i) => ({ ...manual[0], id: String(i), relativeDate: "há 2 anos", date: "2026-10-23", ownerReply: "Resposta longa ".repeat(40) }));
+  for (const reviews of [manual, fixtures]) {
+    const html = renderToStaticMarkup(React.createElement(ReviewsSection, { reviews, isMock: false }));
+    assert.equal((html.match(/<article/g) || []).length, Math.min(reviews.length, 12));
+    assert(html.includes('aria-roledescription="carrossel"')); assert(html.includes("line-clamp-5"));
+    for (const value of ["há 2 anos", "2026-10-23", "<time", "Datas aproximadas"]) assert(!html.includes(value));
+  }
+  const html = renderToStaticMarkup(React.createElement(ReviewsSection, { reviews: fixtures, isMock: false }));
+  assert(html.includes("line-clamp-3"));
 });

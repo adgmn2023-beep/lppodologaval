@@ -1,20 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { formatReviewDate } from "@/lib/relative-date";
-
-export function ReviewDate({ date, fallback }: { date: string; fallback: string }) {
-  const [label, setLabel] = useState(fallback);
-  useEffect(() => {
-    const update = () => setLabel(formatReviewDate(date));
-    const frame = requestAnimationFrame(update);
-    const interval = setInterval(update, 60_000);
-    return () => { cancelAnimationFrame(frame); clearInterval(interval); };
-  }, [date]);
-  return <time dateTime={date}>{label}</time>;
-}
-
-export function ReviewText({ text }: { text: string }) {
+export function ReviewText({ text, lines = 5 }: { text: string; lines?: 3 | 5 }) {
   const [expanded, setExpanded] = useState(false);
   const [overflows, setOverflows] = useState(false);
   const paragraph = useRef<HTMLParagraphElement>(null);
@@ -32,8 +19,8 @@ export function ReviewText({ text }: { text: string }) {
   }, [expanded, text]);
 
   return (
-    <div className="mb-5 text-base leading-7 text-body">
-      <p ref={paragraph} id={id} className={expanded ? "" : "line-clamp-5"}>{text}</p>
+    <div data-carousel-expanded={expanded} className="mb-5 text-base leading-7 text-body">
+      <p ref={paragraph} id={id} className={expanded ? "" : lines === 3 ? "line-clamp-3" : "line-clamp-5"}>{text}</p>
       {(expanded || overflows) && (
         <button type="button" aria-expanded={expanded} aria-controls={id} onClick={() => setExpanded(!expanded)} className="mt-2 flex min-h-12 cursor-pointer items-center rounded-sm font-semibold text-accent underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-gold-deep focus-visible:outline-offset-2">
           {expanded ? "Ler menos" : "Ler mais"}
