@@ -1,0 +1,210 @@
+const { test } = require("node:test");
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const vm = require("node:vm");
+const ts = require("typescript");
+const React = require("react");
+const { renderToStaticMarkup } = require("react-dom/server");
+
+const root = path.resolve(__dirname, "..");
+const initialTime = Date.parse("2026-10-24T15:00:00Z");
+const defaults = {
+  GBP_PROVIDER: "google", GBP_CLIENT_ID: "test-client", GBP_CLIENT_SECRET: "test-secret",
+  GBP_REFRESH_TOKEN: "test-refresh", GBP_ACCOUNT_ID: "123456", GBP_LOCATION_ID: "987654",
+  GBP_MIN_STARS: "4", GBP_POSTS_MAX_AGE_DAYS: "7",
+};
+
+function harness(overrides = {}) {
+  let now = initialTime;
+  class Clock extends Date {
+    constructor(value) { super(arguments.length ? value : now); }
+    static now() { return now; }
+  }
+  const env = { ...defaults, ...overrides };
+  const calls = [], warnings = [], modules = new Map();
+  const state = { failure: undefined, failPath: undefined, malformed: undefined, expires: 3600, mismatchedHours: false };
+  const review = (id, extra = {}) => ({
+    reviewId: id, reviewer: { displayName: "Ursula Maria Silva", profilePhotoUrl: "https://example.test/private-photo" },
+    starRating: "FIVE", comment: "Excelente atendimento.", createTime: "2026-10-23T15:00:00Z", ...extra,
+  });
+  const reviews = [review("first", { reviewReply: { comment: "Obrigada!" } }), review("anonymous", { reviewer: { isAnonymous: true, displayName: "Hidden Person" } }), review("low", { starRating: "THREE" }), review("no-comment", { comment: "  " }), review("single", { reviewer: { displayName: "Val" }, starRating: "FOUR" })];
+  const post = (id, days, extra = {}) => ({
+    state: "LIVE", summary: `Post ${id}`, createTime: new Date(initialTime - days * 86_400_000).toISOString(),
+    media: [{ googleUrl: `https://example.test/${id}.jpg` }], searchUrl: `https://www.google.com/search?q=post-${id}`,
+    callToAction: { url: `https://example.test/${id}` }, ...extra,
+  });
+  const posts = [post("old", 8), post("third", 3), post("draft", 0, { state: "PROCESSING" }), post("first", 1), post("fourth", 4), post("second", 2, { media: [] }), post("future", -1)];
+
+  function load(file) {
+    const absolute = path.resolve(root, file);
+    if (modules.has(absolute)) return modules.get(absolute).exports;
+    const module = { exports: {} };
+    modules.set(absolute, module);
+    const source = ts.transpileModule(fs.readFileSync(absolute, "utf8"), {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
+    }).outputText;
+    function localRequire(name) {
+      // The Next production build separately verifies the real server-only boundary.
+      if (name === "server-only") return {};
+      if (name.startsWith("@/") || name.startsWith(".")) {
+        const base = name.startsWith("@/") ? path.join(root, "src", name.slice(2)) : path.resolve(path.dirname(absolute), name);
+        const resolved = [base + ".ts", base + ".tsx", path.join(base, "index.ts")].find(fs.existsSync);
+        if (!resolved) throw new Error("Missing test module");
+        return load(resolved);
+      }
+      return require(name);
+    }
+    vm.runInNewContext(source, {
+      module, exports: module.exports, require: localRequire, process: { env }, Date: Clock,
+      Intl, URL, URLSearchParams, Response, AbortSignal,
+      console: { warn: (...args) => warnings.push(args.join(" ")) },
+      fetch: async (url, options) => {
+        calls.push({ url, options });
+        if (state.failure === "network") throw new Error("Sensitive upstream error must never be logged");
+        if (url === "https://oauth2.googleapis.com/token") {
+          if (state.failure === "token") return Response.json({ error: "secret error" }, { status: 400 });
+          return Response.json({ access_token: "test-access", expires_in: state.expires });
+        }
+        if (typeof state.failure === "number" && (!state.failPath || url.includes(state.failPath))) return Response.json({ error: "private error" }, { status: state.failure });
+        if (state.failure === "json") return new Response("invalid json");
+        if (url.includes("/reviews?")) return Response.json(state.malformed ?? { averageRating: 4.9, totalReviewCount: 161, reviews });
+        if (url.includes("/localPosts?")) return Response.json({ localPosts: posts });
+        if (url.includes("readMask=regularHours")) {
+          const site = load("src/config/site.ts").site;
+          return Response.json({ regularHours: { periods: site.openingHours.map((h) => {
+            const [openH, openM] = h.opens.split(":").map(Number), [closeH, closeM] = h.closes.split(":").map(Number);
+            return { openDay: h.dayOfWeek.toUpperCase(), closeDay: h.dayOfWeek.toUpperCase(), openTime: { hours: openH, minutes: openM }, closeTime: { hours: state.mismatchedHours ? closeH + 1 : closeH, minutes: closeM } };
+          }) } });
+        }
+        throw new Error("Unexpected URL");
+      },
+    }, { filename: absolute });
+    return module.exports;
+  }
+  return { env, calls, warnings, state, reviews, posts, load, advance: (ms) => { now += ms; } };
+}
+
+test("maps Google data, anonymizes names, filters reviews/posts and reads only the configured location", async () => {
+  const h = harness();
+  const provider = h.load("src/lib/gbp/providers/google.ts");
+  const [summary, reviews, posts] = await Promise.all([provider.googleGbpProvider.getSummary(), provider.googleGbpProvider.getReviews(), provider.googleGbpProvider.getPosts()]);
+  assert.equal(summary.averageRating, 4.9); assert.equal(summary.totalReviews, 161);
+  assert.deepEqual(Array.from(reviews, (r) => r.authorName), ["Ursula S.", "Cliente do Google", "Val"]);
+  assert.equal(reviews[0].ownerReply, "Obrigada!"); assert.equal(reviews[0].relativeDate, "há 1 dia");
+  assert(!JSON.stringify(reviews).includes("profilePhoto")); assert(!JSON.stringify(reviews).includes("Hidden Person"));
+  assert.deepEqual(Array.from(posts, (p) => p.text), ["Post first", "Post second", "Post third"]);
+  assert.equal(posts[1].image, ""); assert.equal(posts[0].searchUrl, "https://www.google.com/search?q=post-first");
+  assert.equal(posts[0].ctaUrl, "https://example.test/first");
+  assert.equal(h.calls.length, 4); assert.equal(h.warnings.length, 0);
+  const token = h.calls[0]; assert.equal(token.options.method, "POST"); assert.equal(token.options.cache, "no-store");
+  assert.equal(token.options.body.get("grant_type"), "refresh_token"); assert.equal(token.options.body.get("client_id"), "test-client");
+  assert.equal(token.options.body.get("client_secret"), "test-secret"); assert.equal(token.options.body.get("refresh_token"), "test-refresh");
+  for (const call of h.calls.slice(1)) {
+    assert.equal(call.options.next.revalidate, 21600); assert.equal(call.options.headers.Authorization, "Bearer test-access");
+    assert(call.url.startsWith("https://mybusiness.googleapis.com/v4/accounts/123456/locations/987654/") || call.url === "https://mybusinessbusinessinformation.googleapis.com/v1/locations/987654?readMask=regularHours");
+  }
+  assert(h.calls.some((c) => new URL(c.url).searchParams.get("orderBy") === "updateTime desc"));
+  await provider.getGoogleSnapshot(); assert.equal(h.calls.length, 4);
+});
+
+test("honors minimum stars and post age, and handles zero reviews and empty posts", async () => {
+  const h = harness({ GBP_MIN_STARS: "5", GBP_POSTS_MAX_AGE_DAYS: "1" });
+  const data = await h.load("src/lib/gbp/providers/google.ts").getGoogleSnapshot();
+  assert.equal(data.reviews.length, 2); assert.equal(data.posts.length, 1);
+  const empty = harness(); empty.state.malformed = { totalReviewCount: 0 }; empty.posts.length = 0;
+  const snapshot = await empty.load("src/lib/gbp/providers/google.ts").getGoogleSnapshot();
+  assert.equal(snapshot.source, "google"); assert.equal(snapshot.summary.averageRating, 0); assert.equal(snapshot.reviews.length, 0); assert.equal(snapshot.posts.length, 0);
+});
+
+test("reuses valid tokens and refreshes 60 seconds before expiry; concurrent reads share one snapshot", async () => {
+  for (const expires of [86400, 21660]) {
+    const h = harness(); h.state.expires = expires;
+    const google = h.load("src/lib/gbp/providers/google.ts");
+    await Promise.all(Array.from({ length: 8 }, () => google.getGoogleSnapshot()));
+    assert.equal(h.calls.length, 4);
+    h.advance(21_600_000);
+    await google.getGoogleSnapshot();
+    assert.equal(h.calls.filter((c) => c.url.endsWith("/token")).length, expires === 86400 ? 1 : 2);
+  }
+});
+
+for (const failure of ["network", "token", "json", 401, 403, 429, 500]) {
+  test(`atomic manual fallback on ${failure}, without logging errors or credentials`, async () => {
+    const h = harness(); h.state.failure = failure;
+    const google = h.load("src/lib/gbp/providers/google.ts");
+    const result = await google.getGoogleSnapshot();
+    assert.equal(result.source, "manual-fallback"); assert.equal(result.summary.averageRating, 5); assert.equal(result.reviews[0].authorName, "Ursula M."); assert.equal(result.posts.length, 0);
+    assert.equal(h.warnings.length, 0);
+    const count = h.calls.length; h.state.failure = undefined;
+    await google.getGoogleSnapshot(); assert.equal(h.calls.length, count);
+    h.advance(60_001); assert.equal((await google.getGoogleSnapshot()).source, "google");
+  });
+}
+
+test("rejects malformed payloads and invalid location IDs without reading other locations", async () => {
+  for (const value of [{}, { averageRating: 6, totalReviewCount: 161 }, { averageRating: 5, totalReviewCount: 161, reviews: "wrong" }, { averageRating: 5, totalReviewCount: 161, reviews: [{ comment: "Text", starRating: "toString" }] }]) {
+    const h = harness(); h.state.malformed = value;
+    assert.equal((await h.load("src/lib/gbp/providers/google.ts").getGoogleSnapshot()).source, "manual-fallback");
+  }
+  for (const env of [{ GBP_LOCATION_ID: "locations/other" }, { GBP_ACCOUNT_ID: "accounts/other" }, { GBP_REFRESH_TOKEN: "" }]) {
+    const h = harness(env); const result = await h.load("src/lib/gbp/providers/google.ts").getGoogleSnapshot();
+    assert.equal(result.source, "manual-fallback"); assert.equal(h.calls.length, 0);
+  }
+});
+
+test("a failure confined to posts or hours still switches the entire snapshot to manual", async () => {
+  for (const failPath of ["/reviews?", "/localPosts?", "readMask=regularHours"]) {
+    const h = harness(); h.state.failure = 403; h.state.failPath = failPath;
+    const data = await h.load("src/lib/gbp/providers/google.ts").getGoogleSnapshot();
+    assert.equal(data.source, "manual-fallback"); assert.equal(data.summary.averageRating, 5);
+    assert.equal(data.reviews[0].authorName, "Ursula M."); assert.equal(data.posts.length, 0);
+  }
+});
+
+test("invalid live-post timestamps fall back, and unsafe media/action URLs are never rendered", async () => {
+  const bad = harness(); bad.posts[0] = { state: "LIVE", createTime: "invalid" };
+  assert.equal((await bad.load("src/lib/gbp/providers/google.ts").getGoogleSnapshot()).source, "manual-fallback");
+  const safe = harness();
+  safe.posts.splice(0, safe.posts.length, { state: "LIVE", summary: "Publicação", createTime: "2026-10-23T15:00:00Z", media: [{ googleUrl: "javascript:alert(1)" }], searchUrl: "data:text/html,unsafe", callToAction: { url: "https://user:password@example.test" } });
+  const snapshot = await safe.load("src/lib/gbp/providers/google.ts").getGoogleSnapshot();
+  assert.equal(snapshot.source, "google"); assert.equal(snapshot.posts[0].image, "");
+  assert.equal(snapshot.posts[0].searchUrl, ""); assert.equal(snapshot.posts[0].ctaUrl, "");
+});
+
+test("hours divergence only warns, preserves local hours and never logs sensitive fields", async () => {
+  const h = harness(); h.state.mismatchedHours = true;
+  const result = await h.load("src/lib/gbp/providers/google.ts").getGoogleSnapshot();
+  assert.equal(result.source, "google"); assert.equal(h.warnings.length, 1);
+  for (const value of Object.values(defaults)) assert(!h.warnings[0].includes(value));
+  assert(!h.warnings[0].includes("17:30"));
+  assert(h.load("src/config/site.ts").site.openingHours.slice(0, 5).every((h) => h.closes === "17:30"));
+});
+
+test("status returns only aggregate fields, distinguishes fallback and disables HTTP caching", async () => {
+  for (const env of [{}, { GBP_REFRESH_TOKEN: "" }, { GBP_PROVIDER: "manual" }, { GBP_PROVIDER: undefined }]) {
+    const h = harness(env); const response = await h.load("src/app/api/gbp/status/route.ts").GET();
+    assert.equal(response.headers.get("cache-control"), "no-store");
+    const body = await response.json();
+    assert.deepEqual(Object.keys(body).sort(), ["provider", "source", "reviews", "posts", "rating", "total", "ok"].sort());
+    const fallback = env.GBP_REFRESH_TOKEN === "";
+    const expectedProvider = Object.hasOwn(env, "GBP_PROVIDER") ? env.GBP_PROVIDER || "manual" : "google";
+    assert.equal(body.provider, expectedProvider);
+    assert.equal(body.source, !fallback && body.provider === "google" ? "google" : "manual-fallback");
+    assert.equal(body.ok, !fallback); assert.equal(body.total, 161);
+    for (const value of ["test-client", "test-secret", "test-refresh", "test-access", "123456", "987654", "Ursula"]) assert(!JSON.stringify(body).includes(value));
+  }
+  const empty = harness(); empty.state.malformed = { totalReviewCount: 0 }; empty.posts.length = 0;
+  const body = await (await empty.load("src/app/api/gbp/status/route.ts").GET()).json();
+  assert.equal(body.rating, null); assert.equal(body.total, 0); assert.equal(body.ok, true);
+});
+
+test("posts render at most three cards, native optional lazy media, limited text and safe links", () => {
+  const h = harness(); const { PostsSection } = h.load("src/components/posts-section.tsx");
+  assert.equal(renderToStaticMarkup(React.createElement(PostsSection, { posts: [], isMock: false })), "");
+  const posts = Array.from({ length: 4 }, (_, i) => ({ id: String(i), text: "A".repeat(400), image: i === 0 ? "https://example.test/image.jpg" : "", imageAlt: "Consultório", relativeDate: "há 1 dia", ctaUrl: "", ctaLabel: "", searchUrl: i === 0 ? "https://www.google.com/search?q=post" : "" }));
+  const html = renderToStaticMarkup(React.createElement(PostsSection, { posts, isMock: false }));
+  assert.equal((html.match(/<article/g) || []).length, 3); assert.equal((html.match(/<img/g) || []).length, 1);
+  assert(html.includes('loading="lazy"')); assert(html.includes("A".repeat(219) + "…")); assert(!html.includes("A".repeat(220)));
+  assert.equal((html.match(/Ver no Google/g) || []).length, 1); assert(!html.includes('href=""')); assert(html.includes("Postagens recentes do Google"));
+});

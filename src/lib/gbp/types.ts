@@ -23,4 +23,13 @@ export type GbpPost = {
   relativeDate: string;
   ctaLabel: string;
   ctaUrl: string;
+  searchUrl?: string;
+  date?: string;
+};
+
+export type GbpSnapshot = {
+  summary: GbpSummary;
+  reviews: GbpReview[];
+  posts: GbpPost[];
+  source: "google" | "manual-fallback";
 };

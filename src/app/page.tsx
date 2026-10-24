@@ -14,6 +14,8 @@ import { WhatsAppCta } from "@/components/whatsapp-cta";
 import { site } from "@/config/site";
 import { gbpProvider, isMockGbpProvider } from "@/lib/gbp";
 
+export const revalidate = 21600;
+
 function RatingBadge({ averageRating, totalReviews }: { averageRating: number; totalReviews: number }) {
   return (
     <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1 text-[13px] font-semibold text-body">
