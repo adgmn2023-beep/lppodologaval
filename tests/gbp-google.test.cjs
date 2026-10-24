@@ -101,7 +101,7 @@ test("maps Google data, anonymizes names, filters reviews/posts and reads only t
   assert.equal(token.options.body.get("grant_type"), "refresh_token"); assert.equal(token.options.body.get("client_id"), "test-client");
   assert.equal(token.options.body.get("client_secret"), "test-secret"); assert.equal(token.options.body.get("refresh_token"), "test-refresh");
   for (const call of h.calls.slice(1)) {
-    assert.equal(call.options.next.revalidate, 21600); assert.equal(call.options.headers.Authorization, "Bearer test-access");
+    assert.equal(call.options.next.revalidate, 1800); assert.equal(call.options.headers.Authorization, "Bearer test-access");
     assert(call.url.startsWith("https://mybusiness.googleapis.com/v4/accounts/123456/locations/987654/") || call.url === "https://mybusinessbusinessinformation.googleapis.com/v1/locations/987654?readMask=regularHours");
   }
   assert(h.calls.some((c) => new URL(c.url).searchParams.get("orderBy") === "updateTime desc"));
@@ -118,14 +118,40 @@ test("honors minimum stars and post age, and handles zero reviews and empty post
 });
 
 test("reuses valid tokens and refreshes 60 seconds before expiry; concurrent reads share one snapshot", async () => {
-  for (const expires of [86400, 21660]) {
+  for (const expires of [86400, 1860]) {
     const h = harness(); h.state.expires = expires;
     const google = h.load("src/lib/gbp/providers/google.ts");
     await Promise.all(Array.from({ length: 8 }, () => google.getGoogleSnapshot()));
     assert.equal(h.calls.length, 4);
-    h.advance(21_600_000);
+    h.advance(1_800_000);
     await google.getGoogleSnapshot();
     assert.equal(h.calls.filter((c) => c.url.endsWith("/token")).length, expires === 86400 ? 1 : 2);
+  }
+});
+
+test("uses the configured Google cache interval for all data fetches and the snapshot, with validated bounds", async () => {
+  const cases = [
+    [undefined, 1800], ["", 1800], [" ", 1800], ["invalid", 1800],
+    ["299", 1800], ["86401", 1800], ["-300", 1800], ["300.5", 1800],
+    ["NaN", 1800], ["Infinity", 1800], ["1800seconds", 1800],
+    ["300", 300], ["1800", 1800], ["7200", 7200], ["86400", 86400],
+  ];
+  for (const [configured, expected] of cases) {
+    const h = harness({ GBP_REVALIDATE_SECONDS: configured });
+    const google = h.load("src/lib/gbp/providers/google.ts");
+    await google.getGoogleSnapshot();
+    h.advance(expected * 1000 - 1);
+    await google.getGoogleSnapshot();
+    assert.equal(h.calls.filter((call) => call.url.includes("/reviews?")).length, 1, `cached until ${expected}s`);
+    h.advance(1);
+    await google.getGoogleSnapshot();
+    assert.equal(h.calls.filter((call) => call.url.includes("/reviews?")).length, 2, `expires at ${expected}s`);
+    for (const call of h.calls) {
+      if (call.url.endsWith("/token")) {
+        assert.equal(call.options.cache, "no-store");
+        assert.equal(call.options.next, undefined);
+      } else assert.equal(call.options.next.revalidate, expected, `configuration: ${configured}`);
+    }
   }
 });
 

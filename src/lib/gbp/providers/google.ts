@@ -7,7 +7,10 @@ import type { GbpPost, GbpReview, GbpSnapshot, GbpSummary } from "../types";
 import { cleanGoogleReview, selectReviews } from "../review-selection";
 import { manualGbpProvider } from "./manual";
 
-const REVALIDATE = 21_600;
+const configuredRevalidateSeconds = Number(process.env.GBP_REVALIDATE_SECONDS);
+const REVALIDATE = Number.isInteger(configuredRevalidateSeconds) && configuredRevalidateSeconds >= 300 && configuredRevalidateSeconds <= 86_400
+  ? configuredRevalidateSeconds
+  : 1_800;
 const stars: Record<string, number> = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5 };
 const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
 let token: { value: string; expiresAt: number } | undefined;

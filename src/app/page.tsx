@@ -14,7 +14,9 @@ import { WhatsAppCta } from "@/components/whatsapp-cta";
 import { site } from "@/config/site";
 import { gbpProvider, isMockGbpProvider } from "@/lib/gbp";
 
-export const revalidate = 21600;
+// Next requires a statically analyzable literal here. Match the provider's default;
+// GBP_REVALIDATE_SECONDS controls Google fetches and the server's snapshot cache.
+export const revalidate = 1800;
 
 function RatingBadge({ averageRating, totalReviews }: { averageRating: number; totalReviews: number }) {
   return (
