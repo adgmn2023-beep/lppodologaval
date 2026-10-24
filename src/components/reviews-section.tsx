@@ -40,7 +40,7 @@ export function ReviewsSection({ reviews, isMock }: ReviewsSectionProps) {
         {isMock && <p className="mb-5 text-[13px] text-muted">Dados de exemplo — avaliações demonstrativas.</p>}
         <Carousel label="Avaliações de pacientes">
           {reviews.map((review) => (
-            <article key={review.id} className="flex min-h-[360px] w-full min-w-0 flex-col rounded-3xl border border-line bg-white p-5 shadow-card md:p-6">
+            <article key={review.id} className="w-full min-w-0 rounded-3xl border border-line bg-white p-4 shadow-card sm:p-5 md:p-6">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <span className="text-lg tracking-[0.12em] text-gold-deep" aria-label={`${review.rating} de 5 estrelas`}>
                   {"★".repeat(review.rating)}
@@ -48,12 +48,12 @@ export function ReviewsSection({ reviews, isMock }: ReviewsSectionProps) {
               </div>
               <ReviewText text={review.text} />
               {review.ownerReply && (
-                <div className="mb-5 rounded-2xl bg-ivory-2 p-4">
+                <div className="mt-4 rounded-2xl bg-ivory-2 p-4">
                   <p className="mb-1 text-[13px] font-bold text-heading">Minha resposta</p>
                   <ReviewText text={review.ownerReply} lines={3} />
                 </div>
               )}
-              <p className="mt-auto border-t border-line pt-4 text-base font-semibold text-heading">{review.authorName}</p>
+              <p className="mt-4 border-t border-line pt-3 text-base font-semibold text-heading">{review.authorName}</p>
             </article>
           ))}
         </Carousel>
