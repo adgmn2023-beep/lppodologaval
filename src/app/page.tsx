@@ -26,12 +26,13 @@ function RatingBadge({ averageRating, totalReviews }: { averageRating: number; t
   );
 }
 
-function LocationSection() {
+function LocationSection({ hasPosts }: { hasPosts: boolean }) {
   return (
-    <section id="localizacao" className="bg-ivory px-5 py-14 sm:px-8 md:py-24">
+    <section id="localizacao" className={`${hasPosts ? "bg-ivory-2" : "bg-white"} px-5 py-14 sm:px-8 md:py-24`}>
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-2 lg:gap-16">
         <div>
           <SectionHeading eyebrow="Onde me encontrar" title="Meu consultório em Campo Grande" description="Recebo você com hora marcada, de segunda a sábado." />
+          <p className="mb-4 text-base leading-7 text-muted">{site.region.description}</p>
           <div className="space-y-6 text-base leading-7 text-muted">
             <div className="flex gap-3">
               <span className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ivory-2"><PinIcon className="h-6 w-6 text-gold-deep" /></span>
@@ -192,8 +193,7 @@ export default async function HomePage() {
         </section>
         <ReviewsSection reviews={reviews} isMock={isMockGbpProvider} />
         <PostsSection posts={posts} isMock={isMockGbpProvider} />
-        {site.confirmed.anyRegion && <section className="bg-white px-5 py-14 sm:px-8 md:py-24"><div className="mx-auto max-w-3xl"><SectionHeading eyebrow="Minha região" title={site.region.title} /><p className="text-lg leading-8 text-muted">{site.region.description}</p></div></section>}
-        <LocationSection />
+        <LocationSection hasPosts={posts.length > 0} />
         <FaqSection />
         <FinalCta />
       </main>
